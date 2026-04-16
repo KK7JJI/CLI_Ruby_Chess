@@ -4,9 +4,7 @@
 module CLIChess
   # given a location return information about
   # other locations on the same rank.
-  class BoardRank < BoardOffDiagonal
-    private
-
+  class BoardRank < BoardLines
     def calculate_initial_coordinates
       # get all coordinate pairs on the same
       # rank as the piece under investigation.

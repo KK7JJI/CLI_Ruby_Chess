@@ -3,7 +3,9 @@
 require_relative 'chess/constants'
 require_relative 'chess/app'
 require_relative 'chess/render'
-require_relative 'chess/board/board_off_diagonal'
+require_relative 'chess/board/board_lines'
+require_relative 'chess/board/board_left_diagonal'
+require_relative 'chess/board/board_right_diagonal'
 require_relative 'chess/board/board_rank'
 require_relative 'chess/board/board_file'
 require_relative 'chess/board'
@@ -27,4 +29,4 @@ module CLIChess
 end
 
 # Start the program if this file is executed directly
-CLIChess.run(ARGV) if __FILE__ == $0
+CLIChess.run(ARGV) if __FILE__ == $PROGRAM_NAME

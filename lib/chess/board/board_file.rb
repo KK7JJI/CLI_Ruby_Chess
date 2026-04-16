@@ -3,10 +3,8 @@
 # namespace for the project.
 module CLIChess
   # given a location return information about
-  # other locations on the same rank.
-  class BoardFile < BoardOffDiagonal
-    private
-
+  # other locations on the same file.
+  class BoardFile < BoardLines
     def calculate_initial_coordinates
       # get all coordinate pairs on the same
       # rank as the piece under investigation.

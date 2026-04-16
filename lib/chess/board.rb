@@ -12,6 +12,8 @@ module CLIChess
       @option = option
       @board_rank = BoardRank.new
       @board_file = BoardFile.new
+      @board_left_diagonal = BoardLeftDiagonal.new
+      @board_right_diagonal = BoardRightDiagonal.new
     end
 
     def render_game
@@ -73,10 +75,8 @@ module CLIChess
     def diagonals(piece)
       return nil unless piece
 
-      position = piece.position
-      result_left = diagonal(position, :left)
-      result_right = diagonal(position, :right)
-
+      result_left = board_left_diagonal.possible_moves(piece, self)
+      result_right = board_right_diagonal.possible_moves(piece, self)
       result_left + result_right
     end
 
@@ -96,34 +96,7 @@ module CLIChess
 
     private
 
-    attr_reader :option, :board_rank, :board_file
-
-    def diagonal(position, dir)
-      arr = []
-      file, rank = position.to_a
-      x = [file, rank].min if dir == :right
-      x = [board.length - file - 1, rank].min if dir == :left
-
-      file += x if dir == :left
-      file -= x if dir == :right
-      rank -= x
-
-      while continue_diag?(rank, file)
-        arr << [file, rank]
-        file += 1 if dir == :right
-        file -= 1 if dir == :left
-        rank += 1
-      end
-      arr
-    end
-
-    def continue_diag?(rank, file)
-      return false if file > 7
-      return false if rank > 7
-      return false if rank.negative?
-      return false if file.negative?
-
-      true
-    end
+    attr_reader :option, :board_rank, :board_file,
+                :board_left_diagonal, :board_right_diagonal
   end
 end

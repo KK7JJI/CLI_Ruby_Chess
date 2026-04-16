@@ -4,7 +4,7 @@
 module CLIChess
   # given a location return information about
   # other locations on the same rank.
-  class BoardOffDiagonal
+  class BoardLines
     def initialize
       @chessboard = nil
       @ref_piece = nil

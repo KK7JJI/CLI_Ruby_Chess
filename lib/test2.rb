@@ -23,6 +23,10 @@ pos5 = CLIChess::Position.new(board_pos: 'g7')
 p1 = CLIChess::Pawn.new(team: 1, position: pos5, board: chessboard)
 chessboard.place(p1)
 
+pos6 = CLIChess::Position.new(board_pos: 'e3')
+p1 = CLIChess::Pawn.new(team: 1, position: pos6, board: chessboard)
+chessboard.place(p1)
+
 hints = q1.next_moves
 hints.each do |hint|
   chessboard.place(hint)
