@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# chess bishop.
+# project namespace
 module CLIChess
-  # chesspiece: king.
+  # chesspiece: bishop.
   class Bishop < ChessPiece
     def cont_initialize
       @description = 'bishop'

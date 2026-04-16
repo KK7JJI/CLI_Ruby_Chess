@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# namespace for the project
+# project namespace
 module CLIChess
   TEAM = {
     0 => { color: 'White', direction: 1 },

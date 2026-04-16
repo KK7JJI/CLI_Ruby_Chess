@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# chess knight.
+# project namespace.
 module CLIChess
   # chesspiece: knight.
   class Knight < ChessPiece
@@ -25,6 +25,7 @@ module CLIChess
       movement.each do |move|
         new_position = calculate_new_position(move, position)
         next unless new_position.valid?
+        next if board.occupied?(new_position)
 
         results << Knight.new(team: team,
                               position: new_position,
@@ -41,8 +42,8 @@ module CLIChess
     def calculate_new_position(move, position)
       cur_file, cur_rank = position.to_a
       new_pos = []
-      new_pos << (cur_file + (move[1] * direction))
-      new_pos << (cur_rank + move[0])
+      new_pos << (cur_file + move[0])
+      new_pos << (cur_rank + (move[1] * direction))
       Position.new(board_pos: positioncodes.encoder[new_pos])
     end
   end

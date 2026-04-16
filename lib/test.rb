@@ -203,3 +203,24 @@ hints.each do |hint|
   chessboard.place(hint)
 end
 puts RenderGame.new(chessboard: chessboard).render_game
+
+chessboard.clear_board
+pos1 = CLIChess::Position.new(board_pos: 'a2')
+pos2 = CLIChess::Position.new(board_pos: 'a7')
+
+p1 = CLIChess::Pawn.new(team: 0, position: pos1, board: chessboard)
+p2 = CLIChess::Pawn.new(team: 1, position: pos2, board: chessboard)
+chessboard.place(p1)
+chessboard.place(p2)
+
+hints = p1.next_moves
+hints.each do |hint|
+  chessboard.place(hint)
+end
+
+hints = p2.next_moves
+hints.each do |hint|
+  chessboard.place(hint)
+end
+
+puts RenderGame.new(chessboard: chessboard).render_game

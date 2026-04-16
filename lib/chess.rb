@@ -10,6 +10,7 @@ require_relative 'chess/pieces/king'
 require_relative 'chess/pieces/bishop'
 require_relative 'chess/pieces/rook'
 require_relative 'chess/pieces/queen'
+require_relative 'chess/pieces/pawn'
 
 # namespace for the project.
 module CLIChess

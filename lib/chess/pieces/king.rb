@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# chess king.
+# project namespace
 module CLIChess
   # chesspiece: king.
   class King < ChessPiece
