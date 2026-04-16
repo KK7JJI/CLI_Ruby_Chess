@@ -53,12 +53,12 @@ module CLIChess
       load_pieces(collect_pieces)
     end
 
-    def file(position)
-      board[position.file]
-    end
+    def rank_and_file(piece)
+      return nil unless piece
 
-    def rank(position)
-      board.map { |file| file[position.rank] }
+      my_rank = rank(piece)
+      my_file = file(piece)
+      my_file + my_rank
     end
 
     def place(piece)
@@ -71,13 +71,8 @@ module CLIChess
 
       position = piece.position
       result_left = diagonal(position, :left)
-      puts 'left'
-      puts result_left.inspect
-      puts ''
       result_right = diagonal(position, :right)
-      puts 'right'
-      puts result_right.inspect
-      puts ''
+
       result_left + result_right
     end
 
@@ -126,6 +121,26 @@ module CLIChess
       return false if file.negative?
 
       true
+    end
+
+    def file(piece)
+      return nil unless piece
+
+      file = piece.position.file
+      result = (0...8).to_a
+      result.map do |idx|
+        [file, idx]
+      end
+    end
+
+    def rank(piece)
+      return nil unless piece
+
+      rank = piece.position.rank
+      result = (0...8).to_a
+      result.map do |idx|
+        [idx, rank]
+      end
     end
   end
 end

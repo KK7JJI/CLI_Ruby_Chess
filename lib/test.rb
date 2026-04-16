@@ -181,3 +181,14 @@ hints.each do |hint|
   chessboard.place(hint)
 end
 puts RenderGame.new(chessboard: chessboard).render_game
+
+chessboard.clear_board
+pos1 = CLIChess::Position.new(board_pos: 'g2')
+r1 = CLIChess::Rook.new(team: 0, position: pos1, board: chessboard)
+chessboard.place(r1)
+
+hints = r1.next_moves
+hints.each do |hint|
+  chessboard.place(hint)
+end
+puts RenderGame.new(chessboard: chessboard).render_game
