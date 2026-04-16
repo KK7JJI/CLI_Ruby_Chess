@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# chess knight.
+# chess king.
 module CLIChess
   # chesspiece: king.
   class King < ChessPiece

@@ -170,3 +170,14 @@ chessboard.clear_ghost_pieces
 puts RenderGame.new(chessboard: chessboard).render_game
 
 puts RenderGame.new(chessboard: chessboard).render_positions
+
+chessboard.clear_board
+pos1 = CLIChess::Position.new(board_pos: 'g8')
+b1 = CLIChess::Bishop.new(team: 0, position: pos1, board: chessboard)
+chessboard.place(b1)
+
+hints = b1.next_moves
+hints.each do |hint|
+  chessboard.place(hint)
+end
+puts RenderGame.new(chessboard: chessboard).render_game

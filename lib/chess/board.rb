@@ -14,6 +14,10 @@ module CLIChess
       @board = Array.new(8) { Array.new(8) }
     end
 
+    def clear_board
+      self.board = Array.new(8) { Array.new(8) }
+    end
+
     def occupied?(pos)
       return false unless board[pos.file][pos.rank]
 
@@ -62,36 +66,23 @@ module CLIChess
       board[file][rank] = piece
     end
 
-    def rdiagonal(position)
-      arr = []
-      rank, file = position.pos
-      x = [file, rank].min
+    def diagonals(piece)
+      return nil unless piece
 
-      file -= x
-      rank -= x
-      while continue_right?(rank, file)
-        arr << board[file][rank]
-        file += 1
-        rank += 1
-      end
-      arr
+      position = piece.position
+      result_left = diagonal(position, :left)
+      puts 'left'
+      puts result_left.inspect
+      puts ''
+      result_right = diagonal(position, :right)
+      puts 'right'
+      puts result_right.inspect
+      puts ''
+      result_left + result_right
     end
 
-    def ldiagonal(position)
-      arr = diagonal(dir: :left)
-      rank, file = position.pos
-
-      x = [(arr.length - 1), file].min
-
-      file -= x
-      rank += x
-
-      while continue_left?(rank, file)
-        arr << board[file][rank]
-        file += 1
-        rank -= 1
-      end
-      arr
+    def to_str
+      to_s
     end
 
     def to_s
@@ -106,20 +97,33 @@ module CLIChess
 
     private
 
-    def clear_board
-      self.board = Array.new(8) { Array.new(8) }
+    def diagonal(position, dir)
+      arr = []
+      file, rank = position.to_a
+      puts "pos: rank: #{rank}, file: #{file}"
+      x = [file, rank].min if dir == :right
+      x = [board.length - file - 1, rank].min if dir == :left
+      puts "min: #{x.inspect}"
+
+      file += x if dir == :left
+      file -= x if dir == :right
+      rank -= x
+
+      puts "start: rank: #{rank}, file: #{file}"
+      while continue_diag?(rank, file)
+        arr << [file, rank]
+        file += 1 if dir == :right
+        file -= 1 if dir == :left
+        rank += 1
+      end
+      arr
     end
 
-    def continue_left?(rank, file)
-      return false if file > 7
-      return false if rank.negative?
-
-      true
-    end
-
-    def continue_right?(rank, file)
+    def continue_diag?(rank, file)
       return false if file > 7
       return false if rank > 7
+      return false if rank.negative?
+      return false if file.negative?
 
       true
     end

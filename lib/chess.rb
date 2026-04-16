@@ -7,7 +7,7 @@ require_relative 'chess/position'
 require_relative 'chess/pieces'
 require_relative 'chess/pieces/knight'
 require_relative 'chess/pieces/king'
-
+require_relative 'chess/pieces/bishop'
 # namespace for the project.
 module CLIChess
   def self.run(args)
