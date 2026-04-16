@@ -11,8 +11,12 @@ pos2 = CLIChess::Position.new(board_pos: 'b7')
 p1 = CLIChess::Pawn.new(team: 1, position: pos2, board: chessboard)
 chessboard.place(p1)
 
-pos2 = CLIChess::Position.new(board_pos: 'h7')
-p1 = CLIChess::Pawn.new(team: 1, position: pos2, board: chessboard)
+pos3 = CLIChess::Position.new(board_pos: 'h7')
+p1 = CLIChess::Pawn.new(team: 1, position: pos3, board: chessboard)
+chessboard.place(p1)
+
+pos4 = CLIChess::Position.new(board_pos: 'h7')
+p1 = CLIChess::Pawn.new(team: 1, position: pos3, board: chessboard)
 chessboard.place(p1)
 
 hints = q1.next_moves

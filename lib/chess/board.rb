@@ -10,6 +10,7 @@ module CLIChess
       @board = Array.new(8) { Array.new(8) }
       @renderer = renderer
       @option = option
+      @board_rank = BoardRank.new
     end
 
     def render_game
@@ -58,7 +59,7 @@ module CLIChess
     def rank_and_file(piece)
       return nil unless piece
 
-      my_rank = rank(piece)
+      my_rank = board_rank.possible_moves(piece, self)
       my_file = file(piece)
       my_file + my_rank
     end
@@ -94,7 +95,7 @@ module CLIChess
 
     private
 
-    attr_reader :option
+    attr_reader :option, :board_rank
 
     def diagonal(position, dir)
       arr = []
@@ -132,41 +133,6 @@ module CLIChess
       result.map do |idx|
         [file, idx]
       end
-    end
-
-    def rank(piece)
-      return nil unless piece
-
-      rank = piece.position.rank
-      ranks = (0...8).to_a
-      results = ranks.map do |idx|
-        [idx, rank]
-      end
-
-      # search left to right for occupied positions
-      start = nil
-      stop = nil
-      temp_start = 0
-      results.each_with_index do |coord, idx|
-        if coord == piece.position.to_a
-          start = temp_start
-          next
-        end
-        temp_start = idx unless board[coord[0]][coord[1]].nil?
-        stop = idx unless board[coord[0]][coord[1]].nil? || start.nil?
-        break unless stop.nil?
-      end
-      stop = 7 if stop.nil?
-
-      results = results.slice(start, stop - start + 1)
-      [0, -1].each do |idx|
-        file, rank = results[idx]
-        blocker = board[file][rank]
-        results.delete_at(idx) unless blocker.nil? || blocker.team != piece.team
-      end
-      results.delete(piece.position.to_a)
-      puts results.inspect
-      results
     end
   end
 end
