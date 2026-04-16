@@ -7,7 +7,11 @@ pos1 = CLIChess::Position.new(board_pos: 'g7')
 q1 = CLIChess::Queen.new(team: 0, position: pos1, board: chessboard)
 chessboard.place(q1)
 
-pos2 = CLIChess::Position.new(board_pos: 'd4')
+pos2 = CLIChess::Position.new(board_pos: 'b7')
+p1 = CLIChess::Pawn.new(team: 1, position: pos2, board: chessboard)
+chessboard.place(p1)
+
+pos2 = CLIChess::Position.new(board_pos: 'h7')
 p1 = CLIChess::Pawn.new(team: 1, position: pos2, board: chessboard)
 chessboard.place(p1)
 

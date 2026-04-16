@@ -20,8 +20,8 @@ module CLIChess
       self.board = Array.new(8) { Array.new(8) }
     end
 
-    def occupied?(pos)
-      return false unless board[pos.file][pos.rank]
+    def occupied?(position)
+      return false unless board[position.file][position.rank]
 
       true
     end
@@ -138,10 +138,35 @@ module CLIChess
       return nil unless piece
 
       rank = piece.position.rank
-      result = (0...8).to_a
-      result.map do |idx|
+      ranks = (0...8).to_a
+      results = ranks.map do |idx|
         [idx, rank]
       end
+
+      # search left to right for occupied positions
+      start = nil
+      stop = nil
+      temp_start = 0
+      results.each_with_index do |coord, idx|
+        if coord == piece.position.to_a
+          start = temp_start
+          next
+        end
+        temp_start = idx unless board[coord[0]][coord[1]].nil?
+        stop = idx unless board[coord[0]][coord[1]].nil? || start.nil?
+        break unless stop.nil?
+      end
+      stop = 7 if stop.nil?
+
+      results = results.slice(start, stop - start + 1)
+      [0, -1].each do |idx|
+        file, rank = results[idx]
+        blocker = board[file][rank]
+        results.delete_at(idx) unless blocker.nil? || blocker.team != piece.team
+      end
+      results.delete(piece.position.to_a)
+      puts results.inspect
+      results
     end
   end
 end
