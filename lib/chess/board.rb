@@ -11,6 +11,7 @@ module CLIChess
       @renderer = renderer
       @option = option
       @board_rank = BoardRank.new
+      @board_file = BoardFile.new
     end
 
     def render_game
@@ -60,7 +61,7 @@ module CLIChess
       return nil unless piece
 
       my_rank = board_rank.possible_moves(piece, self)
-      my_file = file(piece)
+      my_file = board_file.possible_moves(piece, self)
       my_file + my_rank
     end
 
@@ -95,7 +96,7 @@ module CLIChess
 
     private
 
-    attr_reader :option, :board_rank
+    attr_reader :option, :board_rank, :board_file
 
     def diagonal(position, dir)
       arr = []
@@ -123,16 +124,6 @@ module CLIChess
       return false if file.negative?
 
       true
-    end
-
-    def file(piece)
-      return nil unless piece
-
-      file = piece.position.file
-      result = (0...8).to_a
-      result.map do |idx|
-        [file, idx]
-      end
     end
   end
 end
