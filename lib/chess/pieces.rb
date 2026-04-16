@@ -2,18 +2,10 @@
 
 # project namespace
 module CLIChess
-  TEAM = {
-    0 => { color: 'White', direction: 1 },
-    1 => { color: 'Black', direction: -1 }
-  }.freeze
-
-  VIDEO = {
-    bold: "\e[1m",
-    norm: "\e[0m"
-  }
-
   # a generic chess piece, abstract class.
   class ChessPiece
+    include Constants
+
     attr_accessor :description, :position, :board, :team
     attr_reader :value
 

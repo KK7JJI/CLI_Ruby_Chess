@@ -4,14 +4,16 @@
 module CLIChess
   # representation of the chessboard.
   class ChessBoard
-    attr_accessor :board
+    attr_accessor :board, :renderer
 
-    def initialize
-      # store pieces in board locations.
-      # board[file][rank]
-      # Array rows are board columns (file)
-      # Array columns are board rows (rank)
+    def initialize(renderer: RenderGame.new(self), option: :game)
       @board = Array.new(8) { Array.new(8) }
+      @renderer = renderer
+      @option = option
+    end
+
+    def render_game
+      renderer.render(option: option)
     end
 
     def clear_board
@@ -92,19 +94,18 @@ module CLIChess
 
     private
 
+    attr_reader :option
+
     def diagonal(position, dir)
       arr = []
       file, rank = position.to_a
-      puts "pos: rank: #{rank}, file: #{file}"
       x = [file, rank].min if dir == :right
       x = [board.length - file - 1, rank].min if dir == :left
-      puts "min: #{x.inspect}"
 
       file += x if dir == :left
       file -= x if dir == :right
       rank -= x
 
-      puts "start: rank: #{rank}, file: #{file}"
       while continue_diag?(rank, file)
         arr << [file, rank]
         file += 1 if dir == :right

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+require_relative 'chess/constants'
 require_relative 'chess/app'
+require_relative 'chess/render'
 require_relative 'chess/board'
 require_relative 'chess/position_coding'
 require_relative 'chess/position'
