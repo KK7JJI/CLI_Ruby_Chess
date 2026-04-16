@@ -3,6 +3,7 @@
 require_relative 'chess/constants'
 require_relative 'chess/app'
 require_relative 'chess/render'
+require_relative 'chess/board/board_off_diagonal'
 require_relative 'chess/board/board_rank'
 require_relative 'chess/board/board_file'
 require_relative 'chess/board'
