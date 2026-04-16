@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 require_relative 'chess/app'
+require_relative 'chess/board'
+require_relative 'chess/position_coding'
+require_relative 'chess/position'
+require_relative 'chess/pieces'
+require_relative 'chess/pieces/knight'
+require_relative 'chess/pieces/king'
 
 # namespace for the project.
 module CLIChess
