@@ -6,7 +6,7 @@ module CLIChess
   class ChessBoard
     attr_accessor :board, :renderer
 
-    def initialize(renderer: RenderGame.new(self), option: :game)
+    def initialize(renderer: RenderGame.new(self), option: :console)
       @board = Array.new(8) { Array.new(8) }
       @renderer = renderer
       @option = option

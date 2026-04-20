@@ -13,15 +13,15 @@ module CLIChess
     end
 
     def render(option: :game)
-      return render_game if option == :game
-      return render_positions if option == :positions
+      return render_console if option == :console
+      return render_text if option == :text
 
       nil
     end
 
     private
 
-    def render_positions
+    def render_text
       pieces = chessboard.collect_pieces
       white_pieces = pieces.filter { |piece| piece.team.zero? }
       black_pieces = pieces.filter { |piece| piece.team == 1 }
@@ -40,7 +40,7 @@ module CLIChess
       msg.join("\n")
     end
 
-    def render_game
+    def render_console
       msg = []
       (0...8).to_a.each do |file|
         line = " #{('a'.ord + file).chr}"

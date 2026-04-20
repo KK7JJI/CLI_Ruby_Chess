@@ -32,5 +32,3 @@ hints.each do |hint|
   chessboard.place(hint)
 end
 puts chessboard.render_game
-
-# the pawn should block the queens motion along the diagonal.
