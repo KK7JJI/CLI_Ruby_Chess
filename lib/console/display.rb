@@ -8,8 +8,13 @@ module CLIChess
 
     def initialize
       @rows, @cols = IO.console.winsize
-      @main_window = SimpleWindow.new(cols: cols, rows: (rows - 2))
       @windows = []
+      @main_window = new_window(option: :simple,
+                                name: 'MAIN',
+                                reference: [1, 1],
+                                new_origin: [0, 0],
+                                cols: cols,
+                                rows: (rows - 2))
       @windows << @main_window
       @active_window = @windows[-1]
     end
@@ -88,14 +93,21 @@ module CLIChess
       windows[-1]
     end
 
+    def window_metrics(**kwargs)
+      WindowMetrics.new(
+        reference: kwargs.fetch(:reference, nil) || main_window.win_origin,
+        new_origin: kwargs[:new_origin],
+        rows: kwargs[:rows],
+        cols: kwargs[:cols]
+      )
+    end
+
     def new_simple_window(**kwargs)
       SimpleWindow.new(
         name: kwargs[:name],
         id: windows.length,
-        reference: main_window.win_origin,
-        new_origin: kwargs[:new_origin],
-        rows: kwargs[:rows],
-        cols: kwargs[:cols]
+        metrics: window_metrics(**kwargs),
+        display: self
       )
     end
 
@@ -103,10 +115,8 @@ module CLIChess
       ScrollingWindow.new(
         name: kwargs[:name],
         id: windows.length,
-        reference: main_window.win_origin,
-        new_origin: kwargs[:new_origin],
-        rows: kwargs[:rows],
-        cols: kwargs[:cols]
+        metrics: window_metrics(**kwargs),
+        display: self
       )
     end
 
@@ -114,10 +124,8 @@ module CLIChess
       InteractiveWindow.new(
         name: kwargs[:name],
         id: windows.length,
-        reference: main_window.win_origin,
-        new_origin: kwargs[:new_origin],
-        rows: kwargs[:rows],
-        cols: kwargs[:cols]
+        metrics: window_metrics(**kwargs),
+        display: self
       )
     end
   end

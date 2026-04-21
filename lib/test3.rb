@@ -57,12 +57,12 @@ disp.active_window.refresh
 # disp.active_window.next_page
 # disp.refresh_display
 
-# disp.new_window(name: 'WIN5',
-#                 new_origin: [9, 9],
-#                 rows: 5,
-#                 cols: 40,
-#                 option: :interactive)
-# disp.refresh_display
-# disp.active_window.user_input
+disp.new_window(name: 'WIN5',
+                new_origin: [9, 9],
+                rows: 5,
+                cols: 40,
+                option: :interactive)
+disp.refresh_display
+disp.active_window.user_input
 
 print "\e[2;3H"

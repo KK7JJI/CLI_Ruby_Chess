@@ -10,16 +10,15 @@ module CLIChess
 
     def initialize(name: 'MAIN',
                    id: 0,
-                   reference: nil,
-                   new_origin: [0, 0],
-                   rows: 0,
-                   cols: 0)
+                   metrics: nil,
+                   display: nil)
+      @display = display
       @name = name
       @id = id
-      @reference = reference || [1, 1]
-      @win_origin = screen_relative_coords(new_origin)
-      @rows = rows
-      @cols = cols
+      @reference = metrics.reference
+      @win_origin = screen_relative_coords(metrics.new_origin)
+      @rows = metrics.rows
+      @cols = metrics.cols
       @cmds = []
 
       add_borders
@@ -44,7 +43,7 @@ module CLIChess
       # print blank lines to erase current display content
       col = 1 + win_origin[1]
       line = win_origin[0]
-      (rows - 2).times do |row|
+      (rows - 2).times do
         line += 1
         msg = "\e[#{line};#{col}H"
         msg += ' ' * (cols - 2)
@@ -63,7 +62,7 @@ module CLIChess
       msg += BOX[:tr]
       cmds << msg
 
-      (rows - 2).times do |idx|
+      (rows - 2).times do
         line += 1
         msg = "\e[#{line};#{first_col}H#{BOX[:v]}"
         cmds << msg

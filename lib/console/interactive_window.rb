@@ -27,6 +27,7 @@ module CLIChess
       prompt_row = win_origin[0] + rows - 2
       prompt_col = win_origin[1] + 1 + prompt.length + 2
 
+      # REPL loop
       while true
         print "\e[#{prompt_row};#{prompt_col}H"
         user_input = gets.chomp

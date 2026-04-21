@@ -2,6 +2,7 @@
 
 require 'io/console'
 require_relative 'console/constants'
+require_relative 'console/window_metrics'
 require_relative 'console/base_window'
 require_relative 'console/display_window'
 require_relative 'console/simple_window'
