@@ -30,8 +30,8 @@ module CLIChess
       raise NotImplementedError, '#cont_initialize must be defined.'
     end
 
-    def add_text(text, **kwargs)
-      raise NotImplementedError, '#add_text must be defined.'
+    def refresh
+      raise NotImplementedError, '#refresh must be defined.'
     end
 
     def screen_relative_coords(origin)
@@ -39,7 +39,6 @@ module CLIChess
     end
 
     def clear_window
-      print "\e[3;3HClear Window"
       # purge prior display commands
 
       # print blank lines to erase current display content
@@ -50,13 +49,6 @@ module CLIChess
         msg = "\e[#{line};#{col}H"
         msg += ' ' * (cols - 2)
         print msg
-      end
-    end
-
-    def refresh
-      clear_window
-      cmds.each do |cmd|
-        print cmd
       end
     end
 

@@ -3,7 +3,7 @@
 # namespace for the project
 module CLIChess
   # window which allows text scrolling
-  class ScrollingWindow < BaseWindow
+  class ScrollingWindow < DisplayWindow
     attr_accessor :stored_text, :start_line, :page
 
     def cont_initialize
@@ -37,10 +37,10 @@ module CLIChess
       clear_window
       self.cmds = []
       add_borders
-
       col = 1 + win_origin[1]
       line = win_origin[0]
-      start = (page * (rows - 2)) - 1
+      start = page.zero? ? 0 : (page * (rows - 2)) - 1
+
       stored_text[start, stored_text.length].each do |text|
         line += 1
         break if line >= win_origin[0] + rows - 1

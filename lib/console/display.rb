@@ -52,18 +52,25 @@ module CLIChess
     end
 
     def select_window(value)
+      return select_by_id(value) if value.is_a?(Integer)
+      return select_by_name(value) if value.is_a?(String)
+
+      nil
+    end
+
+    def select_by_id(value)
       result = nil
-      if value.is_a?(Integer)
-        windows.each do |window|
-          if window.id == value
-            result = window
-            break
-          end
+      windows.each do |window|
+        if window.id == value
+          result = window
+          break
         end
       end
+      result
+    end
 
-      return result unless value.is_a?(String)
-
+    def select_by_name(value)
+      result = nil
       windows.each do |window|
         if window.name == value
           result = window
@@ -73,30 +80,45 @@ module CLIChess
       result
     end
 
-    def new_window(new_origin:, rows:, cols:, name: '', option: :simple)
-      if option == :simple
-        windows << SimpleWindow.new(
-          name: name,
-          id: windows.length,
-          reference: main_window.win_origin,
-          new_origin: new_origin,
-          rows: rows,
-          cols: cols
-        )
-      end
-
-      if option == :scrolling
-        windows << ScrollingWindow.new(
-          name: name,
-          id: windows.length,
-          reference: main_window.win_origin,
-          new_origin: new_origin,
-          rows: rows,
-          cols: cols
-        )
-      end
+    def new_window(option: :simple, **kwargs)
+      windows << new_simple_window(**kwargs) if option == :simple
+      windows << new_scrolling_window(**kwargs) if option == :scrolling
+      windows << new_interactive_window(**kwargs) if option == :interactive
 
       windows[-1]
+    end
+
+    def new_simple_window(**kwargs)
+      SimpleWindow.new(
+        name: kwargs[:name],
+        id: windows.length,
+        reference: main_window.win_origin,
+        new_origin: kwargs[:new_origin],
+        rows: kwargs[:rows],
+        cols: kwargs[:cols]
+      )
+    end
+
+    def new_scrolling_window(**kwargs)
+      ScrollingWindow.new(
+        name: kwargs[:name],
+        id: windows.length,
+        reference: main_window.win_origin,
+        new_origin: kwargs[:new_origin],
+        rows: kwargs[:rows],
+        cols: kwargs[:cols]
+      )
+    end
+
+    def new_interactive_window(**kwargs)
+      InteractiveWindow.new(
+        name: kwargs[:name],
+        id: windows.length,
+        reference: main_window.win_origin,
+        new_origin: kwargs[:new_origin],
+        rows: kwargs[:rows],
+        cols: kwargs[:cols]
+      )
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'io/console'
 require_relative 'docs'
 require_relative 'console'
@@ -43,16 +45,24 @@ disp.new_window(name: 'WIN3',
 disp.active_window.add_text(CHESS_RULES)
 disp.refresh_display
 
-disp.activate_window('WIN2')
-disp.refresh_display
+# disp.activate_window('WIN2')
+# disp.refresh_display
 
-disp.activate_window('WIN3')
-disp.refresh_display
+# disp.activate_window('WIN3')
+# disp.refresh_display
 
 disp.active_window.next_page
 disp.active_window.refresh
 
-disp.active_window.next_page
-disp.refresh_display
+# disp.active_window.next_page
+# disp.refresh_display
+
+# disp.new_window(name: 'WIN5',
+#                 new_origin: [9, 9],
+#                 rows: 5,
+#                 cols: 40,
+#                 option: :interactive)
+# disp.refresh_display
+# disp.active_window.user_input
 
 print "\e[2;3H"

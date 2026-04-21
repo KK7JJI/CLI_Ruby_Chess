@@ -3,7 +3,7 @@
 # namespace for the project
 module CLIChess
   # window, no scrolling support
-  class SimpleWindow < BaseWindow
+  class SimpleWindow < DisplayWindow
     def add_text(text, **kwargs)
       # trucate text overflowing the left side
       option = kwargs[:option]
@@ -13,6 +13,8 @@ module CLIChess
       center_in_window(text) if option == :center_in_window
       center_in_row(text, row: row) if option == :center_in_row
       insert_at(text, row: row, col: col) if option == :insert_at
+      justify_left(text, row: row) if option == :justify_left
+      justify_right(text, row: row) if option == :justify_right
 
       nil
     end
@@ -21,6 +23,36 @@ module CLIChess
 
     def cont_initialize
       nil
+    end
+
+    def justify_left(text, row: 1)
+      # truncate text which overflows the line
+      text = text[0, cols - 2]
+
+      row += win_origin[0]
+      col = 1 + win_origin[1]
+
+      # trucate text overflowing top a and bottom
+      return nil if row <= win_origin[0]
+      return nil if row >= win_origin[0] + rows - 1
+
+      msg = "\e[#{row};#{col}H#{text}"
+      cmds << msg
+    end
+
+    def justify_right(text, row: 1)
+      # truncate text which overflows the line
+      text = text[0, cols - 2]
+
+      row += win_origin[0]
+      col =  cols - text.length + win_origin[1] - 1
+
+      # trucate text overflowing top a and bottom
+      return nil if row <= win_origin[0]
+      return nil if row >= win_origin[0] + rows - 1
+
+      msg = "\e[#{row};#{col}H#{text}"
+      cmds << msg
     end
 
     def insert_at(text, row: 1, col: 1)

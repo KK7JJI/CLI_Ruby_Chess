@@ -22,7 +22,12 @@ module CLIChess
       r: "\e[7m",
       n: "\e[0m",
       bold: "\e[1m",
-      norm: "\e[0m"
+      norm: "\e[0m",
+      start_cursor_blink: "\e[?12h",
+      stop_cursor_blink: "\e[?12l",
+      show_cursor: "\e[?25h",
+      hide_cursor: "\e[?25hl"
+
     }.freeze
 
     TEAM = {
