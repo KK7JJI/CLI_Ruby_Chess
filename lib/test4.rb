@@ -1,9 +1,30 @@
-def do_something(text, **kwargs)
-  col = kwargs[:col]
-  row = kwargs[:row]
+# frozen_string_literal: true
 
-  puts text
-  puts "at #{row}, #{col}"
+require_relative 'repl/repl'
+
+def evaluate(expr)
+  tokenizer = CLIChess::Tokenizer.new
+  parser = CLIChess::Parser.new
+  evaluator = CLIChess::Evaluator.new
+
+  tokenizer.tokenize_line_input(statement: expr)
+  parser.parse_line(token_list: tokenizer.tokens, statement: expr)
+  evaluator.evaluate_line(parser_root: parser.root,
+                          statement: expr)
 end
 
-do_something('Hello World', col: 4, row: 5)
+def run_script(filename)
+  tokenizer = CLIChess::Tokenizer.new
+  parser = CLIChess::Parser.new
+  evaluator = CLIChess::Evaluator.new
+
+  tokenizer.tokenize_file_input(read_from: filename)
+  parser.parse_file_input
+  evaluator.evaluate_file_input
+end
+
+# expr = 'false==true'
+# evaluate(expr)
+
+filename = 'sample.chess'
+run_script(filename)

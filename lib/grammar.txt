@@ -1,0 +1,66 @@
+[
+ #<CLIChess::Token:0x000075106ad0f0f8 @type="operator", @name="-", @line=1, @col=0>,
+ #<CLIChess::Token:0x000075106ad0e518 @type="operator", @name="-", @line=1, @col=1>,
+ #<CLIChess::Token:0x000075106ad0dde8 @type="integer", @name="5", @line=1, @col=2>
+]
+
+    ## move a1 to b7
+    # help chess
+    # help pawn
+    ## reset
+    ## insert white knight g8
+    ## remove a7
+    ## reposition a6 to a7
+    ## save
+    ## exit
+
+<statement> :==
+'MOVE' <position> 'TO' <position> |
+'REPOSITION <position> 'TO' <position> |
+'INSERT' <team> <piece> 'AT' <position> |
+'REMOVE' <position> |
+'SAVE' |
+'EXIT' |
+'RESET' |
+'HELP' <topic>
+
+
+<expression> := <logical_or>
+<logical_or> := <logical_and> ("||" <logical_and>)*
+<logical_and> := <equality> ("&&" <equality>)*
+<equality> := <additive> (("==" | "!=") <additive>)*
+<additive> := <multiplicative> (("+" | "-") <multiplicative>)*
+<multiplicative> := <unary> (("*" | "/") <unary>)*
+<unary> := ("-" | "!") <unary> | <primary>
+<primary> := integer | string | variable | "(" <expression> ")"
+
+remove "a" + 1
+var = "a1"
+remove var
+remove "a" + 2 - 1
+
+
+def parse_additive
+  node = parse_multiplicative
+
+  while current && current.type == :operator && ["+", "-"].include?(current.value)
+    op = current
+    advance
+    right = parse_multiplicative
+    node = { type: :binary, op: op.value, left: node, right: right }
+  end
+
+  node
+end
+
+
+def parse_unary
+  if current && current.type == :logical && ["-", "!"].include?(current.value)
+    op = current
+    advance
+    expr = parse_unary
+    { type: :unary, op: op.value, expr: expr }
+  else
+    parse_primary
+  end
+end
