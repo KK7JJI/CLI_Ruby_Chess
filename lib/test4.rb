@@ -26,5 +26,5 @@ end
 # expr = 'false==true'
 # evaluate(expr)
 
-filename = 'sample.chess'
+filename = 'assignment.chess'
 run_script(filename)

@@ -10,28 +10,41 @@ module CLIChess
 
     def ==(other)
       if other.is_a?(BooleanValue)
-        parms = { value: value == other.value, line: line,
+        parms = { type: :boolean,
+                  value: value == other.value,
+                  line: line,
                   start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
-      parms = { value: false, line: line, start_pos: start_pos }
+      parms = { type: :boolean,
+                value: false,
+                line: line,
+                start_pos: start_pos }
       BooleanValue.new(parms: parms)
     end
 
     def !=(other)
       if other.is_a?(BooleanValue)
-        parms = { value: value != other.value, line: line,
+        parms = { type: :boolean,
+                  value: value != other.value,
+                  line: line,
                   start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
-      parms = { value: true, line: line, start_pos: start_pos }
+      parms = { type: :boolean,
+                value: true,
+                line: line,
+                start_pos: start_pos }
       BooleanValue.new(parms: parms)
     end
 
     def !
       result = true if value.to_s == 'false'
       result = false if value.to_s == 'true'
-      parms = { value: result, line: line, start_pos: start_pos }
+      parms = { type: :boolean,
+                value: result,
+                line: line,
+                start_pos: start_pos }
       BooleanValue.new(parms: parms)
     end
   end

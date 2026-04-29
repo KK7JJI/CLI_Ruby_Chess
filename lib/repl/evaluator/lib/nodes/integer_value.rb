@@ -13,130 +13,186 @@ module CLIChess
 
     def +(other)
       if other.value.is_a?(Integer)
-        parms = { value: value + other.value, line: line, start_pos: start_pos }
+        parms = { type: :integer,
+                  value: value + other.value,
+                  line: line,
+                  start_pos: start_pos }
         return IntegerValue.new(parms: parms)
       end
       if other.value.is_a?(String)
-        return StringValue.new(value: value.to_s + other.value, line: line,
-                               start_pos: start_pos)
+        parms = { type: :string,
+                  value: value.to_s + other.value,
+                  line: line,
+                  start_pos: start_pos }
+        return StringValue.new(parms: parms)
       end
 
       raise TypeError, "cannot add #{value.class} " \
-                       "to #{other.value.class}, pos: #{start_pos}"
+                       "to #{other.value.class}, " \
+                       "line: #{line}} (#{start_pos})"
     end
 
     def -(other)
       if other.value.is_a?(Integer)
-        parms = { value: value - other.value, line: line, start_pos: start_pos }
+        parms = { type: :integer,
+                  value: value - other.value,
+                  line: line,
+                  start_pos: start_pos }
         return IntegerValue.new(parms: parms)
       end
       raise TypeError, "cannot subtract #{value.class} " \
-                       "from #{other.value.class}, pos: #{start_pos}"
+                       "from #{other.value.class}, " \
+                       "line: #{line}} (#{start_pos})"
     end
 
     def *(other)
       if other.value.is_a?(Integer)
-        parms = { value: value * other.value, line: line, start_pos: start_pos }
+        parms = { type: :integer,
+                  value: value * other.value,
+                  line: line,
+                  start_pos: start_pos }
         return IntegerValue.new(parms: parms)
       end
       raise TypeError, "cannot multiply #{value.class} " \
-                       "by #{other.value.class}, pos: #{start_pos}"
+                       "by #{other.value.class}, " \
+                       "line: #{line}} (#{start_pos})"
     end
 
     def /(other)
       raise "Divide by zero error, pos: #{start_pos}" if other.value.zero?
 
       if other.value.is_a?(Integer)
-        parms = { value: value / other.value, line: line, start_pos: start_pos }
+        parms = { type: :integer,
+                  value: value / other.value,
+                  line: line,
+                  start_pos: start_pos }
         return IntegerValue.new(parms: parms)
       end
 
       raise TypeError, "cannot divide #{value.class} " \
-                       "by #{other.value.class}, pos: #{start_pos}"
+                       "by #{other.value.class}, " \
+                       "line: #{line}} (#{start_pos})"
     end
 
     def %(other)
       raise "Divide by zero error, pos: #{start_pos}" if other.value.zero?
 
       if other.value.is_a?(Integer)
-        parms = { value: value % other.value, line: line, start_pos: start_pos }
+        parms = { type: :integer,
+                  value: value % other.value,
+                  line: line,
+                  start_pos: start_pos }
         return IntegerValue.new(parms: parms)
       end
 
       raise TypeError, "cannot divide #{value.class} " \
-                       "by #{other.value.class}, pos: #{start_pos}"
+                       "by #{other.value.class}, " \
+                       "line: #{line}} (#{start_pos})"
     end
 
     def -@
-      parms = { value: -1 * value, line: line, start_pos: start_pos }
+      parms = { type: :integer,
+                value: -1 * value,
+                line: line,
+                start_pos: start_pos }
       IntegerValue.new(parms: parms)
     end
 
     def +@
-      parms = { value: value, line: line, start_pos: start_pos }
+      parms = { type: :integer,
+                value: value,
+                line: line,
+                start_pos: start_pos }
       IntegerValue.new(parms: parms)
     end
 
     def ==(other)
       if other.value.is_a?(Integer)
-        parms = { value: value == other.value, line: line,
+        parms = { type: :boolean,
+                  value: value == other.value,
+                  line: line,
                   start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
-      parms = { value: false, line: line, start_pos: start_pos }
+      parms = { type: :boolean,
+                value: false,
+                line: line,
+                start_pos: start_pos }
       BooleanValue.new(parms: parms)
     end
 
     def !=(other)
       if other.value.is_a?(Integer)
-        parms = { value: value != other.value, line: line,
+        parms = { type: :boolean,
+                  value: value != other.value,
+                  line: line,
                   start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
-      parms = { value: true, line: line, start_pos: start_pos }
+      parms = { type: :boolean,
+                value: true,
+                line: line,
+                start_pos: start_pos }
       BooleanValue.new(parms: parms)
     end
 
     def <=(other)
       if other.value.is_a?(Integer)
-        parms = { value: value <= other.value, line: line,
+        parms = { type: :boolean,
+                  value: value <= other.value,
+                  line: line,
                   start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
       raise TypeError, "comparison of #{value.class} " \
-                       "with #{other.value.class} has failed - pos: #{start_pos}}"
+                       "with #{other.value.class} has failed - " /
+                       "line: #{line}: (#{start_pos})"
     end
 
     def >=(other)
       if other.value.is_a?(Integer)
-        parms = { value: value >= other.value, line: line,
+        parms = { type: :boolean,
+                  value: value >= other.value,
+                  line: line,
                   start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
       raise TypeError, "comparison of #{value.class} " \
-                       "with #{other.value.class} has failed - pos: #{start_pos}}"
+                       "with #{other.value.class} has failed - " \
+                       "line: #{line}: (#{start_pos})"
     end
 
     def <(other)
       if other.value.is_a?(Integer)
-        parms = { value: value < other.value, line: line, start_pos: start_pos }
+        parms = { type: :boolean,
+                  value: value < other.value,
+                  line: line,
+                  start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
       raise TypeError, "comparison of #{value.class} " \
-                       "with #{other.value.class} has failed - pos: #{start_pos}}"
+                       "with #{other.value.class} has failed - " \
+                       "line: #{line}: (#{start_pos})"
     end
 
     def >(other)
       if other.value.is_a?(Integer)
-        parms = { value: value > other.value, line: line, start_pos: start_pos }
+        parms = { type: :boolean,
+                  value: value > other.value,
+                  line: line,
+                  start_pos: start_pos }
         return BooleanValue.new(parms: parms)
       end
       raise TypeError, "comparison of #{value.class} " \
-                       "with #{other.value.class} has failed - pos: #{start_pos}}"
+                       "with #{other.value.class} has failed - " \
+                       "line: #{line}: (#{start_pos})"
     end
 
     def !
-      parms = { value: false, line: line, start_pos: start_pos }
+      parms = { type: :boolean,
+                value: false,
+                line: line,
+                start_pos: start_pos }
       BooleanValue.new(parms: parms)
     end
   end

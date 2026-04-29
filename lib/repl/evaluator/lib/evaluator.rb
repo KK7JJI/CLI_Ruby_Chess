@@ -77,40 +77,56 @@ module CLIChess
     end
 
     def runtime_value(node)
-      parms = { value: node.value, start_pos: node.start_pos,
+      puts __method__
+      puts node.inspect
+      parms = { type: node.type, value: node.value, start_pos: node.start_pos,
                 line: node.line }
       return IntegerValue.new(parms: parms) if node.type == :integer
       return StringValue.new(parms: parms) if node.type == :string
       return BooleanValue.new(parms: parms) if node.type == :boolean
 
-      raise "undefined value type #{node.type}, pos #{start_pos}"
+      raise "undefined value type #{node.type}" \
+            ", line: #{node.line} (#{node.start_pos})"
     end
 
     def set_variable(node)
       result = walk(node.assigned_node)
+      puts result.inspect
       variables[node.value] =
-        { value: result.value, type: result.class.name }
+        { value: result.value, type: result.type }
       result
     end
 
     def resolve_variable(node)
-      unless variables.key?(node.name)
-        raise NameError,
-              "undefined variable \"#{node.name}\", pos: #{node.start_pos}"
+      unless variables.key?(node.value)
+        raise NameError, "undefined variable \"#{node.value}\"" \
+                         ", line: #{node.line} (#{node.start_pos})"
       end
 
-      parms = { value: variables[node.name][:value], start_pos: node.start_pos,
+      parms = { value: variables[node.value][:value],
+                start_pos: node.start_pos,
                 line: node.line }
 
-      return IntegerValue.new(parms: parms) \
-        if variables[node.name][:type] == :integer
-      return StringValue.new(parms: parms) \
-        if variables[node.name][:type] == :string
-      return BooleanValue.new(parms: parms) \
-        if variables[node.name][:type] == :boolean
+      if variables[node.value][:type] == :integer
+        type_parm = { type: :integer }
+        parms.merge(type_parm)
+        return IntegerValue.new(parms: parms)
+      end
 
-      raise "undefined value type for variable \"#{node.name}\", " \
-            "type #{node.type} pos: #{node.start_pos}"
+      if variables[node.value][:type] == :string
+        type_parm = { type: :string }
+        parms.merge(type_parm)
+        return StringValue.new(parms: parms)
+      end
+
+      if variables[node.value][:type] == :boolean
+        type_parm = { type: :boolean }
+        parms.merge(type_parm)
+        return BooleanValue.new(parms: parms)
+      end
+
+      raise "undefined value type for variable \"#{node.value}\", " \
+            "type \"#{node.type}\" line: #{node.line} (#{node.start_pos})"
     end
 
     def unary_operations(operator, value)

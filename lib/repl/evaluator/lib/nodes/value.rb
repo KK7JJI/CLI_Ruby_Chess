@@ -4,9 +4,10 @@
 module CLIChess
   # evaluator runtime object
   class Value
-    attr_reader :value, :line, :start_pos
+    attr_reader :value, :line, :start_pos, :type
 
     def initialize(**kwargs)
+      @type = kwargs[:parms][:type]
       @value = kwargs[:parms][:value]
       @line = kwargs[:parms][:line]
       @start_pos = kwargs[:parms][:start_pos]
@@ -39,7 +40,7 @@ module CLIChess
     end
 
     def to_s
-      "#{self.class.name}: value: #{value}"
+      "#{self.class.name}, type: #{type}, value: #{value}"
     end
   end
 end
