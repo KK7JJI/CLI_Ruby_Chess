@@ -26,7 +26,7 @@ def run_script(filename)
   evaluator.evaluate_file_input
 end
 
-expr = 'a+2='
+expr = '1@2'
 puts "result => (#{evaluate(expr)})"
 
 # filename = 'assignment.chess'

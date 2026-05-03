@@ -57,11 +57,12 @@ module CLIChess
       return nil if statement.nil?
 
       while statement.length.positive?
-        read_tokens(statement)
+        tokenize(statement)
 
         if result.nil?
-          raise SyntaxError,
-                "line: #{lines.length} #{col}, \"#{eval_statement}\""
+          msg = "SyntaxError, unexpected token \"#{eval_statement[col]}\""
+          tokens << error_token(error_msg: msg)
+          break
         end
 
         statement = consume(result, statement)
@@ -94,7 +95,7 @@ module CLIChess
       end
     end
 
-    def read_tokens(input_copy)
+    def tokenize(input_copy)
       self.result = nil
       TYPES.each_key do |token_type|
         self.result = match(input_copy, token_type)
@@ -132,6 +133,15 @@ module CLIChess
       Token.new(
         type: type,
         name: result,
+        line: lines.length + 1,
+        col: col
+      )
+    end
+
+    def error_token(error_msg: nil)
+      Token.new(
+        type: :error,
+        name: error_msg,
         line: lines.length + 1,
         col: col
       )
