@@ -19,8 +19,7 @@ require_relative 'chess/pieces/rook'
 require_relative 'chess/pieces/queen'
 require_relative 'chess/pieces/pawn'
 
-require_relative 'console/console'
-require_relative 'repl/repl'
+require_relative 'interface/interface'
 
 # namespace for the project.
 module CLIChess

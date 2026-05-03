@@ -2,7 +2,7 @@
 
 require 'io/console'
 require_relative 'docs'
-require_relative 'console'
+require_relative 'interface/interface'
 
 disp = CLIChess::Display.new
 disp.main_window.add_text('Hello World', option: :center_in_window)
@@ -58,9 +58,9 @@ disp.active_window.refresh
 # disp.refresh_display
 
 disp.new_window(name: 'WIN5',
-                new_origin: [9, 9],
-                rows: 5,
-                cols: 40,
+                new_origin: [disp.rows - 8 - 3, 1],
+                rows: 8,
+                cols: disp.cols - 2,
                 option: :interactive)
 disp.refresh_display
 disp.active_window.user_input
