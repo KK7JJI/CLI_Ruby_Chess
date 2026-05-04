@@ -326,23 +326,116 @@ describe CLIChess::Evaluator do
     end
     context 'invalid expressions' do
       [
-        ['1(1+2)', CLIChess::ErrorMsg],
-        ['1+(1+2', CLIChess::ErrorMsg],
-        ['1+(1+', CLIChess::ErrorMsg],
-        ['1+(1+)', CLIChess::ErrorMsg],
-        ['+', CLIChess::ErrorMsg],
-        ['-()', CLIChess::ErrorMsg],
-        ['a=', CLIChess::ErrorMsg],
-        ['a+2=', CLIChess::ErrorMsg],
-        ['1+()/3', CLIChess::ErrorMsg],
-        ['1@(2+3)', CLIChess::ErrorMsg],
-        ['1&', CLIChess::ErrorMsg],
-        ['1*', CLIChess::ErrorMsg]
+        ['1(1+2)', CLIChess::ErrorMsg, 1],
+        ['1+(1+2', CLIChess::ErrorMsg, 6],
+        ['1+(1+', CLIChess::ErrorMsg, 4],
+        ['1+(1+)', CLIChess::ErrorMsg, 5],
+        ['+', CLIChess::ErrorMsg, 0],
+        ['-()', CLIChess::ErrorMsg, 2],
+        ['a=', CLIChess::ErrorMsg, 1],
+        ['a+2=', CLIChess::ErrorMsg, 3],
+        ['1+()/3', CLIChess::ErrorMsg, 3],
+        ['1@(2+3)', CLIChess::ErrorMsg, 1],
+        ['1&', CLIChess::ErrorMsg, 1],
+        ['1*', CLIChess::ErrorMsg, 1]
 
-      ].each do |statement, expectedclass|
-        it "#{statement} evaluates to error message" do
+      ].each do |statement, expectedclass, pos|
+        it "#{statement} evaluates to error message, pos #{pos}" do
           result = evaluate(statement)
           expect(result).to be_a(expectedclass)
+          expect(result.start_pos).to eq(pos)
+        end
+      end
+    end
+    describe 'Functions' do
+      context '#add_ints, valid functions' do
+        [['add_ints()', 0],
+         ['add_ints(1)', 1],
+         ['add_ints(1 + 1)', 2],
+         ['add_ints(1, 1)', 2],
+         ['add_ints(1, 1 + 1)', 3],
+         ['add_ints(1 + 1, 1)', 3],
+         ['add_ints(1 + 1, 1 + 1, 1 + 1)', 6],
+         ['2*add_ints(1,1)', 4],
+         ['add_ints(add_ints(1+1), add_ints(1+1))',
+          4]].each do |function, expected_result|
+          it "#{function} evaluates to #{expected_result}" do
+            result = evaluate(function)
+            expect(result.value).to eq(expected_result)
+          end
+        end
+      end
+      context '#add_ints, invalid functions' do
+        [['add_ints', CLIChess::ErrorMsg],
+         ['add_ints(', CLIChess::ErrorMsg],
+         ['add_ints(1+)', CLIChess::ErrorMsg],
+         ['add_ints(1(4*3))', CLIChess::ErrorMsg],
+         ['add_ints("1")', CLIChess::ErrorMsg],
+         ['add_ints("1"+2)',
+          CLIChess::ErrorMsg]].each do |function, expected_class|
+          it "#{function} evaluates to #{expected_class}" do
+            result = evaluate(function)
+            expect(result).to be_a(expected_class)
+          end
+        end
+      end
+      context '#prod_ints, valid functions' do
+        [['prod_ints()', 0],
+         ['prod_ints(1)', 1],
+         ['prod_ints(1 + 1)', 2],
+         ['prod_ints(2, 3)', 6],
+         ['prod_ints(3, 1 + 1)', 6],
+         ['prod_ints(1 + 1, 3)', 6],
+         ['prod_ints(1 + 1, 1 + 1, 1 + 1)', 8],
+         ['2*prod_ints(2,4)', 16],
+         ['prod_ints(prod_ints(1+2), prod_ints(2+1))',
+          9]].each do |function, expected_result|
+          it "#{function} evaluates to #{expected_result}" do
+            result = evaluate(function)
+            expect(result.value).to eq(expected_result)
+          end
+        end
+      end
+      context '#prod_ints, invalid functions' do
+        [['prod_ints', CLIChess::ErrorMsg],
+         ['prod_ints(', CLIChess::ErrorMsg],
+         ['prod_ints(1,1+)', CLIChess::ErrorMsg],
+         ['prod_ints(1(4*3))', CLIChess::ErrorMsg],
+         ['prod_ints("1")', CLIChess::ErrorMsg],
+         ['prod_ints("1"+2)',
+          CLIChess::ErrorMsg]].each do |function, expected_class|
+          it "#{function} evaluates to #{expected_class}" do
+            result = evaluate(function)
+            expect(result).to be_a(expected_class)
+          end
+        end
+      end
+
+      context '#factoria, valid functions' do
+        [['factorial(0)', 1],
+         ['factorial(1)', 1],
+         ['factorial(2)', 2],
+         ['factorial(3)', 6],
+         ['factorial(4)', 24],
+         ['factorial(5)', 120]].each do |function, expected_result|
+          it "#{function} evaluates to #{expected_result}" do
+            result = evaluate(function)
+            expect(result.value).to eq(expected_result)
+          end
+        end
+      end
+      context '#factoria, invalid functions' do
+        [['factorial("0")', CLIChess::ErrorMsg],
+         ['factorial(1', CLIChess::ErrorMsg],
+         ['factorial(1+(1+))', CLIChess::ErrorMsg],
+         ['factorial(-1)', CLIChess::ErrorMsg],
+         ['factorial(+)', CLIChess::ErrorMsg],
+         ['factorial(5,4)',
+          CLIChess::ErrorMsg]].each do |function, expected_class|
+          it "#{function} evaluates to #{expected_class}" do
+            result = evaluate(function)
+            expect(result).to be_a(expected_class)
+          end
         end
       end
     end

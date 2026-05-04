@@ -8,6 +8,8 @@ module CLIChess
     include Serialize
 
     KEYWORDS = %w[
+      new_window
+      move_window
       move
       to
       help

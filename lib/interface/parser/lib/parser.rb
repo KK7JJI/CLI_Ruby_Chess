@@ -63,6 +63,8 @@ module CLIChess
 
       self.parser_tree = parse_statement
 
+      # if an error occured collape the parser tree
+      # for the evaluator.
       if current&.type == :error
         self.parser_tree = error_node
       elsif !current.nil?
@@ -70,6 +72,8 @@ module CLIChess
       end
     end
 
+    # garbage collection, if we didn't process all tokens
+    # then there was an error in the original expression.
     def unexpected_tokens
       msg = "SyntaxError, unexpected token \"#{current.name}\""
       insert_token(error_token(error_msg: msg))
@@ -88,6 +92,7 @@ module CLIChess
     end
 
     def load_tokens(input_line)
+      # load tokens serialized by the tokenizer.
       token_list = rebuild(JSON.load(input_line))
       token_list[1].each do |token|
         token.type = token.type.to_sym
@@ -97,6 +102,7 @@ module CLIChess
     end
 
     def save_parser_trees(save_to:)
+      # serialize parser trees and save them to file.
       File.open(save_to, 'w') do |file|
         parser_trees.each do |parser_tree|
           file.puts JSON.generate(parser_tree)
@@ -134,7 +140,8 @@ module CLIChess
       if current.nil?
         # ran out of tokens prematurely.
         insert_token(error_token(
-                       error_msg: 'SyntaxError, unexpected end of line'
+                       error_msg: 'SyntaxError, unexpected end of line',
+                       position_offset: 1
                      ))
         return
       end
@@ -284,25 +291,63 @@ module CLIChess
 
     def parse_primary
       unless current.nil?
+        return function if function?
+
         %i[integer string boolean variable].each do |type|
           next unless current.type == type
 
           return primary_value_node(type)
         end
-        # start a new expression
+
         return expression_group if expression_group?
       end
 
-      # an error token
+      # we are either out of tokens or one has made
+      # its way here which doesn't belong here.
       msg = 'SyntaxError, incomplete expression.'
       insert_token(error_token(error_msg: msg))
       error_node
     end
 
-    def expression_group?
+    def function
+      token = current
+      consume(expected_type: [:variable])
+      consume(expected_type: [:punctuation], expected_value: ['('])
+
+      args = function_args
+      consume(expected_type: [:punctuation], expected_value: [')'])
+      function_node(token, args)
+    end
+
+    def function_args
+      return [] if current.nil?
+      return [] if current.name == ')' && current.type == :punctuation
+
+      args = []
+      args << parse_expression
+      while current && current.type == :punctuation && current.name == ','
+        consume(expected_type: [:punctuation], expected_value: [','])
+        args << parse_expression
+      end
+      args
+    end
+
+    def function_node(token, args)
+      FunctionNode.new(parms: {
+                         type: :function,
+                         line: token.line,
+                         start_pos: token.col,
+                         func: token.name,
+                         args: args
+                       })
+    end
+
+    def function?
       return false if current.nil?
-      return false unless current.type == :punctuation
-      return false unless current.name == '('
+      return false unless current.type == :variable
+      return false unless peek_next
+      return false unless peek_next.type == :punctuation
+      return false unless peek_next.name == '('
 
       true
     end
@@ -316,6 +361,14 @@ module CLIChess
       expr
     end
 
+    def expression_group?
+      return false if current.nil?
+      return false unless current.type == :punctuation
+      return false unless current.name == '('
+
+      true
+    end
+
     def primary_value_node(type)
       token = current
       consume(expected_type: [type])
@@ -327,12 +380,13 @@ module CLIChess
                                    })
     end
 
-    def error_token(error_msg: nil)
+    def error_token(error_msg: nil, position_offset: 0)
+      token = current || tokens[-1]
       Token.new(
         type: :error,
         name: error_msg,
-        line: tokens[-1].line,
-        col: tokens[-1].col
+        line: token.line,
+        col: token.col + position_offset
       )
     end
 

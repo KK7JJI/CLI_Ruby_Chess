@@ -11,19 +11,24 @@ module CLIChess
   UNARY_METHODS = {
     '+' => :+@,
     '-' => :-@,
-    '!' => :! # only works if you override `!`
+    '!' => :!
   }.freeze
 
   # evaluate parser nodes
   class Evaluator
     include Serialize
 
-    attr_reader :variables, :result, :statement
+    attr_reader :variables, :result, :statement, :functions
 
     def initialize
       @variables = {}
       @result = nil
       @statement = nil
+      @functions = {
+        'add_ints' => method(:func_add_ints),
+        'prod_ints' => method(:func_prod_ints),
+        'factorial' => method(:func_factorial)
+      }
     end
 
     def evaluate_line(parser_tree: nil, statement: nil)
@@ -67,6 +72,9 @@ module CLIChess
       when :assignment
         set_variable(node)
 
+      when :function
+        evaluate_function_call(node)
+
       when :binary
         binary_operations(
           node.value,
@@ -100,6 +108,90 @@ module CLIChess
                 line: node.line,
                 error_msg: msg }
       ErrorMsg.new(parms: parms)
+    end
+
+    def evaluate_function_call(node)
+      return functions[node.func].call(node) if functions.key?(node.func)
+
+      msg = "Undefined function #{func}"
+      ErrorMsg.new(parms: {
+                     start_pos: node.start_pos,
+                     line: node.line,
+                     error_msg: msg
+                   })
+    end
+
+    def func_prod_ints(node)
+      args = arg_values(node)
+      unless args.all? { |arg| arg.is_a?(Integer) }
+        msg = 'Invalid arguments, expected integers'
+        return evaluator_error(node, msg: msg)
+      end
+
+      result = args.reduce { |prod, num| prod * num }
+      IntegerValue.new(parms: {
+                         type: :integer,
+                         value: result,
+                         line: node.line,
+                         start_pos: node.start_pos
+                       })
+    end
+
+    def func_add_ints(node)
+      args = arg_values(node)
+      unless args.all? { |arg| arg.is_a?(Integer) }
+        msg = 'Invalid arguments, expected integers'
+        return evaluator_error(node, msg: msg)
+      end
+
+      # verify all args are integer_nodes
+      IntegerValue.new(parms: {
+                         type: :integer,
+                         value: args.sum,
+                         line: node.line,
+                         start_pos: node.start_pos
+                       })
+    end
+
+    def func_factorial(node)
+      args = arg_values(node)
+      unless args.length == 1
+        msg = "Received \"#{args.length}\" arguments, expected \"1\""
+        return evaluator_error(node, msg: msg)
+      end
+
+      unless args[0].is_a?(Integer)
+        msg = "Expected integer argument, got \"#{args[0]}\""
+        return evaluator_error(node,
+                               msg: msg)
+      end
+
+      unless args[0] >= 0
+        msg = "Expected arg >= 0, got \"#{args[0]}\""
+        return evaluator_error(node,
+                               msg: msg)
+      end
+
+      value = 0
+      value = 1 if args[0].zero?
+      if value == 0
+        value = (1..args[0]).to_a.reduce(1) do |prod, num|
+          prod * num
+        end
+      end
+
+      IntegerValue.new(parms: {
+                         type: :integer,
+                         value: value,
+                         line: node.line,
+                         start_pos: node.start_pos
+                       })
+    end
+
+    def arg_values(node)
+      node.args.map do |arg|
+        walk(arg).value
+      end
     end
 
     def runtime_value(node)

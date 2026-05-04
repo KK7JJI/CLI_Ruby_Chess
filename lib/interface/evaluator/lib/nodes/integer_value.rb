@@ -5,10 +5,7 @@ module CLIChess
   # evaluator integer object
   class IntegerValue < Value
     def cont_initialize(**kwargs)
-      raise "#{kwargs[:parms][:value]} is not type Integer, pos #{start_pos}" \
-        unless kwargs[:parms][:value].to_s == kwargs[:parms][:value].to_i.to_s
-
-      @value = kwargs[:parms][:value].to_i
+      @value = value.to_i
     end
 
     def +(other)

@@ -8,6 +8,7 @@ def evaluate(expr)
   evaluator = CLIChess::Evaluator.new
 
   tokenizer.tokenize_line_input(statement: expr)
+  puts tokenizer.tokens
   parser.parse_line(token_list: tokenizer.tokens, statement: expr)
   puts '======'
   parser.pretty_print
@@ -23,13 +24,18 @@ def run_script(filename)
 
   tokenizer.tokenize_file_input(read_from: filename)
   parser.parse_file_input
+
+  puts '======'
+  parser.pretty_print
+  puts '======'
+
   evaluator.evaluate_file_input
 end
 
-expr = '1(1+2)'
+expr = 'factorial(-1)'
 puts "result => (#{evaluate(expr)})"
 
-# filename = 'assignment.chess'
+# filename = 'sample.chess'
 # run_script(filename)
 
 # repl = CLIChess::REPL.new
