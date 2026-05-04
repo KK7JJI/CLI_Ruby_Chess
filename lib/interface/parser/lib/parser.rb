@@ -62,20 +62,18 @@ module CLIChess
       self.pos = 0
 
       self.parser_tree = parse_statement
-      return if current.nil?
 
-      # extra tokens.
-      unexpected_tokens
+      if current&.type == :error
+        self.parser_tree = error_node
+      elsif !current.nil?
+        self.parser_tree = unexpected_tokens
+      end
     end
 
     def unexpected_tokens
-      advance_to_end
-      if current.type != :error
-        msg = "SyntaxError, unexpected token \"#{current.name}\""
-        tokens << error_token(error_msg: msg)
-        advance
-      end
-      self.parser_tree = error_node
+      msg = "SyntaxError, unexpected token \"#{current.name}\""
+      insert_token(error_token(error_msg: msg))
+      error_node
     end
 
     def parse_file_input(read_from: 'tokens.data', save_to: 'parser.data')
@@ -127,26 +125,47 @@ module CLIChess
       self.pos = tokens.length - 1
     end
 
-    def consume(_expected_type = nil, _expected_value = nil)
+    def insert_token(token)
+      tokens[pos] = token
+      # self.tokens = tokens[0, pos] + [token] + tokens[pos, tokens.length - 1]
+    end
+
+    def consume(expected_type: nil, expected_value: nil)
       if current.nil?
         # ran out of tokens prematurely.
-        tokens << error_token(error_msg: 'SyntaxError, unexpected end of line')
+        insert_token(error_token(
+                       error_msg: 'SyntaxError, unexpected end of line'
+                     ))
+        return
+      end
+
+      if parse_error?(expected_type, expected_value)
+        msg = "SyntaxError: unexpected token type \"#{current.type}\", " \
+              "value \"#{current.name}\""
+        insert_token(error_token(error_msg: msg))
         return
       end
 
       advance
     end
 
-    def expected_type?(expected_type = nil)
-      return true if expected_type.nil?
+    def parse_error?(expected_type, expected_value)
+      return true unless expected_type?(expected_type)
+      return true unless expected_value?(expected_value)
 
-      expected_type.any?(current.type)
+      false
+    end
+
+    def expected_type?(type = nil)
+      return true if type.nil?
+
+      type.any?(current.type)
     end
 
     def expected_value?(value = nil)
       return true if value.nil?
 
-      value == current.name
+      value.any?(current.name)
     end
 
     def parse_statement
@@ -167,8 +186,8 @@ module CLIChess
     def parse_assignment
       # a = 2
       token = current # variable
-      consume(%i[variable])
-      consume(%i[assignment])
+      consume(expected_type: %i[variable])
+      consume(expected_type: %i[assignment], expected_value: ['='])
 
       assignment_node(token, parse_expression)
     end
@@ -218,7 +237,7 @@ module CLIChess
       node = callback.call
       while binary_operator?(op_type)
         token = current
-        consume(%i[operator comparison])
+        consume(expected_type: %i[operator comparison])
         right_node = callback.call
         node = binary_node(token, node, right_node)
       end
@@ -241,7 +260,7 @@ module CLIChess
 
       # advance past the operator token
       token = current
-      consume
+      consume(expected_type: %i[operator logical])
 
       unary_node(token, parse_unary)
     end
@@ -264,19 +283,19 @@ module CLIChess
     end
 
     def parse_primary
-      %i[integer string boolean variable].each do |type|
-        break if current.nil?
-        next unless current.type == type
+      unless current.nil?
+        %i[integer string boolean variable].each do |type|
+          next unless current.type == type
 
-        return primary_value_node(type)
+          return primary_value_node(type)
+        end
+        # start a new expression
+        return expression_group if expression_group?
       end
 
-      # start a new expression
-      return expression_group if expression_group?
-
       # an error token
-      msg = 'parser error, incomplete expression.'
-      tokens << error_token(error_msg: msg)
+      msg = 'SyntaxError, incomplete expression.'
+      insert_token(error_token(error_msg: msg))
       error_node
     end
 
@@ -289,15 +308,17 @@ module CLIChess
     end
 
     def expression_group
-      consume(%i[punctuation], '(')
+      consume(expected_type: %i[punctuation], expected_value: ['('])
       expr = parse_expression
-      consume(%i[punctuation], ')')
+      return expr if expr.type == :error
+
+      consume(expected_type: %i[punctuation], expected_value: [')'])
       expr
     end
 
     def primary_value_node(type)
       token = current
-      consume([type])
+      consume(expected_type: [type])
 
       PRIMARY_NODE_TYPES[type].new(parms: {
                                      line: token.line,

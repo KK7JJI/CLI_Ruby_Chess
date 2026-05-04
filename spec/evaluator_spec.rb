@@ -334,7 +334,11 @@ describe CLIChess::Evaluator do
         ['-()', CLIChess::ErrorMsg],
         ['a=', CLIChess::ErrorMsg],
         ['a+2=', CLIChess::ErrorMsg],
-        ['1+()/3', CLIChess::ErrorMsg]
+        ['1+()/3', CLIChess::ErrorMsg],
+        ['1@(2+3)', CLIChess::ErrorMsg],
+        ['1&', CLIChess::ErrorMsg],
+        ['1*', CLIChess::ErrorMsg]
+
       ].each do |statement, expectedclass|
         it "#{statement} evaluates to error message" do
           result = evaluate(statement)
