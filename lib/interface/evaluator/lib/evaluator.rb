@@ -18,16 +18,22 @@ module CLIChess
   class Evaluator
     include Serialize
 
-    attr_reader :variables, :result, :statement, :functions
+    attr_reader :variables, :result, :statement, :functions, :commands, :display
 
-    def initialize
+    def initialize(display: nil)
+      @display = display
       @variables = {}
       @result = nil
       @statement = nil
+
       @functions = {
         'add_ints' => method(:func_add_ints),
         'prod_ints' => method(:func_prod_ints),
         'factorial' => method(:func_factorial)
+      }
+
+      @commands = {
+        'new_window' => method(:exec_new_window)
       }
     end
 
@@ -46,6 +52,7 @@ module CLIChess
         statement, root_node = load_parsed_line(input_line)
         evaluate_line(parser_tree: root_node, statement: statement)
       end
+      result
     end
 
     def inspect
@@ -69,6 +76,9 @@ module CLIChess
       type = node.type.to_sym
 
       case type
+      when :command
+        run_command(node)
+
       when :assignment
         set_variable(node)
 
@@ -76,16 +86,25 @@ module CLIChess
         evaluate_function_call(node)
 
       when :binary
+        left = walk(node.left_node)
+        right = walk(node.right_node)
+
+        return left if left.type == :error
+        return right if right.type == :error
+
         binary_operations(
           node.value,
-          walk(node.left_node),
-          walk(node.right_node)
+          left,
+          right
         )
 
       when :unary
+        x = walk(node.node)
+        return x if x.type == :error
+
         unary_operations(
           node.value,
-          walk(node.node)
+          x
         )
 
       when :boolean, :string, :integer
@@ -110,10 +129,83 @@ module CLIChess
       ErrorMsg.new(parms: parms)
     end
 
+    def run_command(node)
+      return commands[node.value].call(node) if commands.key?(node.value)
+
+      msg = "Undefined command #{node.value}"
+      ErrorMsg.new(parms: {
+                     start_pos: node.start_pos,
+                     line: node.line,
+                     error_msg: msg
+                   })
+    end
+
+    def exec_new_window(node)
+      args = node.args.map do |arg|
+        walk(arg)
+      end
+      args.each do |arg|
+        return arg if arg.type == :error
+      end
+
+      unless new_window_valid_args?
+        msg = 'One or more invalid arguments.'
+        return evaluator_error(node, msg: msg)
+      end
+
+      # print "\e[5;5display: #{display.inspect}"
+      # print "\e[6;5"
+
+      display.new_window(name: '',
+                         new_origin: win_origin(variables['origin'][:value]),
+                         rows: variables['rows'][:value],
+                         cols: variables['columns'][:value],
+                         option: variables['type'][:value].to_sym)
+      display.refresh_display
+      # %w[type rows columns].each do |var|
+      #   puts "#{var} = #{variables[var][:value].inspect}"
+      #   puts "#{var} = #{variables[var][:value].to_sym}" if var == 'type'
+      #   puts "#{var} = #{variables[var][:value].to_sym.class}" if var == 'type'
+      # end
+
+      # puts win_origin(variables['origin'][:value]).inspect
+
+      msg = "#{node.value} executed."
+      return_message(node, msg: msg)
+    end
+
+    def new_window_valid_args?
+      # all arguments are variables
+      win_types = %w[simple scrolling interactive]
+      return false unless /\d+[;,|]\d+/.match?(variables['origin'][:value])
+      return false unless variables['rows'][:value].is_a?(Integer)
+      return false unless variables['columns'][:value].is_a?(Integer)
+      return false unless win_types.include?(variables['type'][:value])
+
+      true
+    end
+
+    def win_origin(value)
+      # expect "1;1"
+      [':', ',', '|'].each do |punc|
+        value = value.sub(punc, ';')
+      end
+      value.split(';').map { |coord| coord.to_i }
+    end
+
+    def return_message(node, msg: nil)
+      ReturnMessage.new(parms: {
+                          type: :message,
+                          line: node.line,
+                          start_pos: node.start_pos,
+                          msg: msg
+                        })
+    end
+
     def evaluate_function_call(node)
       return functions[node.func].call(node) if functions.key?(node.func)
 
-      msg = "Undefined function #{func}"
+      msg = "Undefined function #{node.func}"
       ErrorMsg.new(parms: {
                      start_pos: node.start_pos,
                      line: node.line,
@@ -207,6 +299,8 @@ module CLIChess
 
     def set_variable(node)
       result = walk(node.assigned_node)
+      return result if result.type == :error
+
       variables[node.value] =
         { value: result.value, type: result.type }
       result

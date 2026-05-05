@@ -14,8 +14,12 @@ module CLIChess
       @args = kwargs[:parms][:args] || []
     end
 
+    def pretty_print(indent = 0)
+      puts "#{indent_str(indent)}#{self.class.name}, function = #{func}"
+    end
+
     def to_s
-      ''
+      "Function: #{func}"
     end
   end
 end

@@ -177,9 +177,55 @@ module CLIChess
 
     def parse_statement
       # process keywords here as well.
+      return parse_command if current.type == :keyword
       return parse_assignment if variable_assignment?
 
       parse_expression
+    end
+
+    def parse_command
+      return unless current&.type == :keyword && current&.name == 'new_window'
+
+      command_new_window
+    end
+
+    def command_node(token, args = [])
+      CommandNode.new(parms: {
+                        type: :command,
+                        value: token.name,
+                        args: args,
+                        line: token.line,
+                        start_pos: token.col
+                      })
+    end
+
+    def command_new_window
+      # new_window type='simple', origin='1;1', columns=30, rows=20
+      token = current
+      consume(expected_type: [:keyword], expected_value: ['new_window'])
+      cmd_node = command_node(token)
+
+      var_names = %w[type origin columns rows]
+
+      var_name = current&.name if current&.type == :variable
+      cmd_node.args << parse_assignment(var_names: var_names)
+      var_names.delete(var_name)
+
+      while current&.type == :punctuation && current&.name == ','
+        consume(expected_type: [:punctuation], expected_value: [','])
+        var_name = current.name if current&.type == :variable
+        cmd_node.args << parse_assignment(var_names: var_names)
+        var_names.delete(var_name)
+      end
+
+      var_names = var_names.map { |name| "\"#{name}\"" }
+      msg = "\"#{cmd_node.value}\" missing arguments #{var_names.join(', ')}"
+      insert_token(error_token(error_msg: msg)) unless var_names.empty?
+
+      return cmd_node unless current&.type == :error
+
+      insert_token(error_token(error_msg: msg))
+      error_node
     end
 
     def variable_assignment?
@@ -190,13 +236,19 @@ module CLIChess
       true
     end
 
-    def parse_assignment
+    def parse_assignment(var_names: nil)
       # a = 2
+      # var_names -> list of allowed names, optional
       token = current # variable
-      consume(expected_type: %i[variable])
+      consume(expected_type: %i[variable], expected_value: var_names)
       consume(expected_type: %i[assignment], expected_value: ['='])
 
-      assignment_node(token, parse_expression)
+      unless current&.type == :error
+        return assignment_node(token,
+                               parse_expression)
+      end
+
+      error_node
     end
 
     def assignment_node(token, node)

@@ -2,10 +2,10 @@
 
 require_relative 'interface/interface'
 
-def evaluate(expr)
+def evaluate(expr, display)
   tokenizer = CLIChess::Tokenizer.new
   parser = CLIChess::Parser.new
-  evaluator = CLIChess::Evaluator.new
+  evaluator = CLIChess::Evaluator.new(display: display)
 
   tokenizer.tokenize_line_input(statement: expr)
   puts tokenizer.tokens
@@ -30,24 +30,21 @@ def run_script(filename)
   puts '======'
 
   evaluator.evaluate_file_input
-  evaluator
 end
 
-expr = 'new_window type="simple", origin="5;5", columns=20, rows=40'
-result = evaluate(expr)
-puts "result => (#{result})"
+disp = CLIChess::Display.new
 
-# filename = 'sample.chess'
-# puts run_script(filename).inspect
+disp.new_window(name: 'SAMPLE',
+                new_origin: [1, 1],
+                rows: 40,
+                cols: 20,
+                option: :simple)
 
-# repl = CLIChess::REPL.new
-# repl.repl_loop
+disp.new_window(name: 'WIN1',
+                new_origin: [disp.rows - 8 - 3, 1],
+                rows: 8,
+                cols: disp.cols - 2,
+                option: :interactive)
+disp.refresh_display
 
-# history = CLIChess::History.new
-# 105.times do |idx|
-#   history.push('hi' + idx.to_s)
-# end
-# puts history.last
-# puts history.last(101)
-# puts history
-# puts history.last(9)
+disp.active_window.user_input

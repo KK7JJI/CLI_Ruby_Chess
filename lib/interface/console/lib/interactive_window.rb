@@ -12,7 +12,7 @@ module CLIChess
       @line_number = 1
       @tokenizer = CLIChess::Tokenizer.new
       @parser = CLIChess::Parser.new
-      @evaluator = CLIChess::Evaluator.new
+      @evaluator = CLIChess::Evaluator.new(display: display)
     end
 
     # behavior here is to set the initial promp at the bottom right
