@@ -32,12 +32,7 @@ module CLIChess
       @resolve_variables = ResolveVariables.new
       @assign_variables = AssignVariables.new(evaluator: self)
       @runtime_value = RuntimeValue.new
-
-      @functions = {
-        'add_ints' => method(:func_add_ints),
-        'prod_ints' => method(:func_prod_ints),
-        'factorial' => method(:func_factorial)
-      }
+      @eval_functions = EvalFunctions.new(evaluator: self)
 
       @commands = {
         'new_window' => method(:exec_new_window)
@@ -73,7 +68,7 @@ module CLIChess
         assign_variables.set_variable(node)
 
       when :function
-        evaluate_function_call(node)
+        eval_functions.evaluate_function_call(node)
 
       when :binary
         binary_expression.binary_operations(node)
@@ -107,7 +102,7 @@ module CLIChess
     private
 
     attr_reader :binary_expression, :unary_expression, :resolve_variables,
-                :assign_variables, :runtime_value
+                :assign_variables, :runtime_value, :eval_functions
     attr_writer :result, :statement
 
     def load_parsed_line(statement)
@@ -180,101 +175,6 @@ module CLIChess
                           msg: msg
                         })
     end
-
-    def evaluate_function_call(node)
-      return functions[node.func].call(node) if functions.key?(node.func)
-
-      msg = "Undefined function #{node.func}"
-      ErrorMsg.new(parms: {
-                     start_pos: node.start_pos,
-                     line: node.line,
-                     error_msg: msg
-                   })
-    end
-
-    def func_prod_ints(node)
-      args = arg_values(node)
-      unless args.all? { |arg| arg.is_a?(Integer) }
-        msg = 'Invalid arguments, expected integers'
-        return evaluator_error(node, msg: msg)
-      end
-
-      result = args.reduce { |prod, num| prod * num }
-      IntegerValue.new(parms: {
-                         type: :integer,
-                         value: result,
-                         line: node.line,
-                         start_pos: node.start_pos
-                       })
-    end
-
-    def func_add_ints(node)
-      args = arg_values(node)
-      unless args.all? { |arg| arg.is_a?(Integer) }
-        msg = 'Invalid arguments, expected integers'
-        return evaluator_error(node, msg: msg)
-      end
-
-      # verify all args are integer_nodes
-      IntegerValue.new(parms: {
-                         type: :integer,
-                         value: args.sum,
-                         line: node.line,
-                         start_pos: node.start_pos
-                       })
-    end
-
-    def func_factorial(node)
-      args = arg_values(node)
-      unless args.length == 1
-        msg = "Received \"#{args.length}\" arguments, expected \"1\""
-        return evaluator_error(node, msg: msg)
-      end
-
-      unless args[0].is_a?(Integer)
-        msg = "Expected integer argument, got \"#{args[0]}\""
-        return evaluator_error(node,
-                               msg: msg)
-      end
-
-      unless args[0] >= 0
-        msg = "Expected arg >= 0, got \"#{args[0]}\""
-        return evaluator_error(node,
-                               msg: msg)
-      end
-
-      value = 0
-      value = 1 if args[0].zero?
-      if value == 0
-        value = (1..args[0]).to_a.reduce(1) do |prod, num|
-          prod * num
-        end
-      end
-
-      IntegerValue.new(parms: {
-                         type: :integer,
-                         value: value,
-                         line: node.line,
-                         start_pos: node.start_pos
-                       })
-    end
-
-    def arg_values(node)
-      node.args.map do |arg|
-        walk(arg).value
-      end
-    end
-
-    # def runtime_value(node)
-    #   type = node.type.to_sym
-    #   parms = { type: type, value: node.value, start_pos: node.start_pos,
-    #             line: node.line }
-    #   return IntegerValue.new(parms: parms) if type == :integer
-    #   return StringValue.new(parms: parms) if type == :string
-    #   return BooleanValue.new(parms: parms) if type == :boolean
-
-    #   evaluator_error(node, msg: "undefined value type #{type}")
-    # end
 
     def copy_error_message(node)
       ErrorMsg.new(parms: { type: node.type,

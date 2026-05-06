@@ -2,7 +2,7 @@
 
 # project namespace
 module CLIChess
-  # evaluator unary operation
+  # evaluator literals; strings, integers, boolean values
   class RuntimeValue
     include ErrorMessage
 
