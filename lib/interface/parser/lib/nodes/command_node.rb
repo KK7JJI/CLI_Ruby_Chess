@@ -9,7 +9,7 @@ module CLIChess
     attr_reader :type, :value, :args
 
     def cont_initialize(**kwargs)
-      @type = :command
+      @type = kwargs[:parms][:type]
       @value = kwargs[:parms][:value]
       @args = kwargs[:parms][:args]
     end

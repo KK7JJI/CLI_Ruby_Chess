@@ -2,19 +2,7 @@
 
 # namespace for the project
 module CLIChess
-  # VALUE_CLASSES = {
-  #   integer: IntegerValue,
-  #   string: StringValue,
-  #   boolean: BooleanValue
-  # }.freeze
-
-  # UNARY_METHODS = {
-  #   '+' => :+@,
-  #   '-' => :-@,
-  #   '!' => :!
-  # }.freeze
-
-  # evaluate parser nodes
+  # evaluate parser generated nodes
   class Evaluator
     include Serialize
     include ErrorMessage
@@ -33,10 +21,12 @@ module CLIChess
       @assign_variables = AssignVariables.new(evaluator: self)
       @runtime_value = RuntimeValue.new
       @eval_functions = EvalFunctions.new(evaluator: self)
+      @eval_commands = EvalCommands.new(evaluator: self)
 
-      @commands = {
-        'new_window' => method(:exec_new_window)
-      }
+      @eval_console_commands = EvalConsoleCommands.new(
+        evaluator: self,
+        display: display
+      )
     end
 
     def evaluate_line(parser_tree: nil, statement: nil)
@@ -61,8 +51,11 @@ module CLIChess
       type = node.type.to_sym
 
       case type
+      when :console_command
+        eval_console_commands.run_command(node)
+
       when :command
-        run_command(node)
+        eval_commands.run_command(node)
 
       when :assignment
         assign_variables.set_variable(node)
@@ -102,78 +95,13 @@ module CLIChess
     private
 
     attr_reader :binary_expression, :unary_expression, :resolve_variables,
-                :assign_variables, :runtime_value, :eval_functions
+                :assign_variables, :runtime_value, :eval_functions,
+                :eval_commands, :eval_console_commands
     attr_writer :result, :statement
 
     def load_parsed_line(statement)
       parser_statement = rebuild(JSON.load(statement))
       [parser_statement[0], parser_statement[1]]
-    end
-
-    def run_command(node)
-      return commands[node.value].call(node) if commands.key?(node.value)
-
-      msg = "Undefined command #{node.value}"
-      ErrorMsg.new(parms: {
-                     start_pos: node.start_pos,
-                     line: node.line,
-                     error_msg: msg
-                   })
-    end
-
-    def exec_new_window(node)
-      args = node.args.map do |arg|
-        walk(arg)
-      end
-      args.each do |arg|
-        return arg if arg.type == :error
-      end
-
-      unless new_window_valid_args?
-        msg = 'One or more invalid arguments.'
-        return evaluator_error(node, msg: msg)
-      end
-
-      # print "\e[5;5display: #{display.inspect}"
-      # print "\e[6;5"
-
-      display.new_window(name: '',
-                         new_origin: win_origin(variables['origin'][:value]),
-                         rows: variables['rows'][:value],
-                         cols: variables['columns'][:value],
-                         option: variables['type'][:value].to_sym)
-      display.refresh_display
-
-      msg = "#{node.value} executed."
-      return_message(node, msg: msg)
-    end
-
-    def new_window_valid_args?
-      # all arguments are variables
-      win_types = %w[simple scrolling interactive]
-      return false unless /\d+[;,|]\d+/.match?(variables['origin'][:value])
-      return false unless variables['rows'][:value].is_a?(Integer)
-      return false unless variables['columns'][:value].is_a?(Integer)
-      return false unless win_types.include?(variables['type'][:value])
-
-      true
-    end
-
-    def win_origin(value)
-      # expect "1;1"
-      [':', ',', '|'].each do |punc|
-        value = value.sub(punc, ';')
-      end
-      value.split(';').map { |coord| coord.to_i }
-    end
-
-    def return_message(node, msg: nil)
-      ReturnMessage.new(parms: {
-                          type: :message,
-                          line: node.line,
-                          start_pos: node.start_pos,
-                          msg: msg
-                        })
     end
 
     def copy_error_message(node)

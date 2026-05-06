@@ -189,9 +189,9 @@ module CLIChess
       command_new_window
     end
 
-    def command_node(token, args = [])
+    def command_node(token, type, args = [])
       CommandNode.new(parms: {
-                        type: :command,
+                        type: type,
                         value: token.name,
                         args: args,
                         line: token.line,
@@ -203,7 +203,7 @@ module CLIChess
       # new_window type='simple', origin='1;1', columns=30, rows=20
       token = current
       consume(expected_type: [:keyword], expected_value: ['new_window'])
-      cmd_node = command_node(token)
+      cmd_node = command_node(token, :console_command)
 
       var_names = %w[type origin columns rows]
 
