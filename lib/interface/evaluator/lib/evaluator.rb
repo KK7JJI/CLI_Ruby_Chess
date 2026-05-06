@@ -2,21 +2,22 @@
 
 # namespace for the project
 module CLIChess
-  VALUE_CLASSES = {
-    integer: IntegerValue,
-    string: StringValue,
-    boolean: BooleanValue
-  }.freeze
+  # VALUE_CLASSES = {
+  #   integer: IntegerValue,
+  #   string: StringValue,
+  #   boolean: BooleanValue
+  # }.freeze
 
-  UNARY_METHODS = {
-    '+' => :+@,
-    '-' => :-@,
-    '!' => :!
-  }.freeze
+  # UNARY_METHODS = {
+  #   '+' => :+@,
+  #   '-' => :-@,
+  #   '!' => :!
+  # }.freeze
 
   # evaluate parser nodes
   class Evaluator
     include Serialize
+    include ErrorMessage
 
     attr_reader :variables, :result, :statement, :functions, :commands, :display
 
@@ -25,6 +26,11 @@ module CLIChess
       @variables = {}
       @result = nil
       @statement = nil
+
+      @binary_expression = BinaryOp.new(evaluator: self)
+      @unary_expression = UnaryOp.new(evaluator: self)
+      @resolve_variables = ResolveVariables.new
+      @assign_variables = AssignVariables.new(evaluator: self)
 
       @functions = {
         'add_ints' => method(:func_add_ints),
@@ -55,23 +61,6 @@ module CLIChess
       result
     end
 
-    def inspect
-      "Statement: #{statement}\nResult=#{result}"
-    end
-
-    def to_s
-      result
-    end
-
-    private
-
-    attr_writer :result, :statement
-
-    def load_parsed_line(statement)
-      parser_statement = rebuild(JSON.load(statement))
-      [parser_statement[0], parser_statement[1]]
-    end
-
     def walk(node)
       type = node.type.to_sym
 
@@ -80,38 +69,22 @@ module CLIChess
         run_command(node)
 
       when :assignment
-        set_variable(node)
+        assign_variables.set_variable(node)
 
       when :function
         evaluate_function_call(node)
 
       when :binary
-        left = walk(node.left_node)
-        right = walk(node.right_node)
-
-        return left if left.type == :error
-        return right if right.type == :error
-
-        binary_operations(
-          node.value,
-          left,
-          right
-        )
+        binary_expression.binary_operations(node)
 
       when :unary
-        x = walk(node.node)
-        return x if x.type == :error
-
-        unary_operations(
-          node.value,
-          x
-        )
+        unary_expression.unary_operation(node)
 
       when :boolean, :string, :integer
         runtime_value(node)
 
       when :variable
-        resolve_variable(node)
+        resolve_variables.resolve_variable(node, variables)
 
       when :error
         copy_error_message(node)
@@ -122,11 +95,23 @@ module CLIChess
       end
     end
 
-    def evaluator_error(node, msg: nil)
-      parms = { start_pos: node.start_pos,
-                line: node.line,
-                error_msg: msg }
-      ErrorMsg.new(parms: parms)
+    def inspect
+      "Statement: #{statement}\nResult=#{result}"
+    end
+
+    def to_s
+      result
+    end
+
+    private
+
+    attr_reader :binary_expression, :unary_expression, :resolve_variables,
+                :assign_variables
+    attr_writer :result, :statement
+
+    def load_parsed_line(statement)
+      parser_statement = rebuild(JSON.load(statement))
+      [parser_statement[0], parser_statement[1]]
     end
 
     def run_command(node)
@@ -162,13 +147,6 @@ module CLIChess
                          cols: variables['columns'][:value],
                          option: variables['type'][:value].to_sym)
       display.refresh_display
-      # %w[type rows columns].each do |var|
-      #   puts "#{var} = #{variables[var][:value].inspect}"
-      #   puts "#{var} = #{variables[var][:value].to_sym}" if var == 'type'
-      #   puts "#{var} = #{variables[var][:value].to_sym.class}" if var == 'type'
-      # end
-
-      # puts win_origin(variables['origin'][:value]).inspect
 
       msg = "#{node.value} executed."
       return_message(node, msg: msg)
@@ -297,60 +275,59 @@ module CLIChess
       evaluator_error(node, msg: "undefined value type #{type}")
     end
 
-    def set_variable(node)
-      result = walk(node.assigned_node)
-      return result if result.type == :error
+    # def set_variable(node)
+    #   result = walk(node.assigned_node)
+    #   return result if result.type == :error
 
-      variables[node.value] =
-        { value: result.value, type: result.type }
-      result
-    end
+    #   variables[node.value] =
+    #     { value: result.value, type: result.type }
+    #   result
+    # end
 
-    def resolve_variable(node)
-      unless variables.key?(node.value)
-        return evaluator_error(node,
-                               msg: "undefined variable \"#{node.value}\"")
-      end
+    # def resolve_variable(node)
+    #   unless variables.key?(node.value)
+    #     return evaluator_error(node,
+    #                            msg: "undefined variable \"#{node.value}\"")
+    #   end
 
-      parms = { value: variables[node.value][:value],
-                start_pos: node.start_pos,
-                line: node.line }
+    #   parms = { value: variables[node.value][:value],
+    #             start_pos: node.start_pos,
+    #             line: node.line }
 
-      klass = VALUE_CLASSES[variables[node.value][:type]]
-      if klass
-        return klass.new(parms: parms.merge(
-          type: variables[node.value][:type]
-        ))
-      end
+    #   klass = VALUE_CLASSES[variables[node.value][:type]]
+    #   if klass
+    #     return klass.new(parms: parms.merge(
+    #       type: variables[node.value][:type]
+    #     ))
+    #   end
 
-      msg = "undefined value type for variable \"#{node.value}\", " \
-            "type \"#{node.type}\""
-      evaluator_error(node, msg: msg)
-    end
+    #   msg = "undefined value type for variable \"#{node.value}\", " \
+    #         "type \"#{node.type}\""
+    #   evaluator_error(node, msg: msg)
+    # end
 
-    def unary_operations(operator, value)
-      method = UNARY_METHODS[operator]
-      unless value.respond_to?(method)
-        msg = "Operator \"#{method}\" not supported for #{value.type}"
-        return evaluator_error(value, msg: msg)
-      end
-      value.public_send(method)
-    end
+    # def unary_operations(operator, value)
+    #   method = UNARY_METHODS[operator]
+    #   unless value.respond_to?(method)
+    #     msg = "Operator \"#{method}\" not supported for #{value.type}"
+    #     return evaluator_error(value, msg: msg)
+    #   end
+    #   value.public_send(method)
+    # end
 
-    def binary_operations(operator, l_value, r_value)
-      unless l_value.respond_to?(operator)
-        msg = "Operator \"#{method}\" not supported for #{l_value.type}"
-        return evaluator_error(l_value, msg: msg)
-      end
-      l_value.public_send(operator, r_value)
-    end
+    # def binary_operations(operator, l_value, r_value)
+    #   unless l_value.respond_to?(operator)
+    #     msg = "Operator \"#{method}\" not supported for #{l_value.type}"
+    #     return evaluator_error(l_value, msg: msg)
+    #   end
+    #   l_value.public_send(operator, r_value)
+    # end
 
     def copy_error_message(node)
-      parms = { type: node.type,
-                line: node.line,
-                start_pos: node.start_pos,
-                error_msg: node.error_msg }
-      ErrorMsg.new(parms: parms)
+      ErrorMsg.new(parms: { type: node.type,
+                            line: node.line,
+                            start_pos: node.start_pos,
+                            error_msg: node.error_msg })
     end
   end
 end
