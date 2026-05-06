@@ -31,6 +31,7 @@ module CLIChess
       @unary_expression = UnaryOp.new(evaluator: self)
       @resolve_variables = ResolveVariables.new
       @assign_variables = AssignVariables.new(evaluator: self)
+      @runtime_value = RuntimeValue.new
 
       @functions = {
         'add_ints' => method(:func_add_ints),
@@ -81,7 +82,7 @@ module CLIChess
         unary_expression.unary_operation(node)
 
       when :boolean, :string, :integer
-        runtime_value(node)
+        runtime_value.runtime_value(node)
 
       when :variable
         resolve_variables.resolve_variable(node, variables)
@@ -106,7 +107,7 @@ module CLIChess
     private
 
     attr_reader :binary_expression, :unary_expression, :resolve_variables,
-                :assign_variables
+                :assign_variables, :runtime_value
     attr_writer :result, :statement
 
     def load_parsed_line(statement)
@@ -264,63 +265,15 @@ module CLIChess
       end
     end
 
-    def runtime_value(node)
-      type = node.type.to_sym
-      parms = { type: type, value: node.value, start_pos: node.start_pos,
-                line: node.line }
-      return IntegerValue.new(parms: parms) if type == :integer
-      return StringValue.new(parms: parms) if type == :string
-      return BooleanValue.new(parms: parms) if type == :boolean
-
-      evaluator_error(node, msg: "undefined value type #{type}")
-    end
-
-    # def set_variable(node)
-    #   result = walk(node.assigned_node)
-    #   return result if result.type == :error
-
-    #   variables[node.value] =
-    #     { value: result.value, type: result.type }
-    #   result
-    # end
-
-    # def resolve_variable(node)
-    #   unless variables.key?(node.value)
-    #     return evaluator_error(node,
-    #                            msg: "undefined variable \"#{node.value}\"")
-    #   end
-
-    #   parms = { value: variables[node.value][:value],
-    #             start_pos: node.start_pos,
+    # def runtime_value(node)
+    #   type = node.type.to_sym
+    #   parms = { type: type, value: node.value, start_pos: node.start_pos,
     #             line: node.line }
+    #   return IntegerValue.new(parms: parms) if type == :integer
+    #   return StringValue.new(parms: parms) if type == :string
+    #   return BooleanValue.new(parms: parms) if type == :boolean
 
-    #   klass = VALUE_CLASSES[variables[node.value][:type]]
-    #   if klass
-    #     return klass.new(parms: parms.merge(
-    #       type: variables[node.value][:type]
-    #     ))
-    #   end
-
-    #   msg = "undefined value type for variable \"#{node.value}\", " \
-    #         "type \"#{node.type}\""
-    #   evaluator_error(node, msg: msg)
-    # end
-
-    # def unary_operations(operator, value)
-    #   method = UNARY_METHODS[operator]
-    #   unless value.respond_to?(method)
-    #     msg = "Operator \"#{method}\" not supported for #{value.type}"
-    #     return evaluator_error(value, msg: msg)
-    #   end
-    #   value.public_send(method)
-    # end
-
-    # def binary_operations(operator, l_value, r_value)
-    #   unless l_value.respond_to?(operator)
-    #     msg = "Operator \"#{method}\" not supported for #{l_value.type}"
-    #     return evaluator_error(l_value, msg: msg)
-    #   end
-    #   l_value.public_send(operator, r_value)
+    #   evaluator_error(node, msg: "undefined value type #{type}")
     # end
 
     def copy_error_message(node)
