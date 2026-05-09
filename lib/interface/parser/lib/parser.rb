@@ -6,8 +6,8 @@ module CLIChess
   class Parser
     include Serialize
 
-    attr_accessor :tokens, :parser_tree
-    attr_reader :statement
+    attr_accessor :parser_tree
+    attr_reader :statement, :consume, :tokens
 
     ASSIGNMENT_OPS = ['='].freeze
     MULTIPLICATIVE_OPS = ['*', '/', '%'].freeze
@@ -40,6 +40,7 @@ module CLIChess
 
       # @tokens = nil
       @tokens = TokenList.new
+      @consume = Consume.new(tokens: @tokens)
     end
 
     def pretty_print
@@ -58,11 +59,8 @@ module CLIChess
     def parse_line(token_list: nil, statement: nil)
       return if token_list.empty?
 
-      # self.statement = statement
       tokens.load_list(statement, token_list)
-      # self.tokens = token_list
       self.parser_tree = nil
-      # self.pos = 0
 
       self.parser_tree = parse_statement
 
@@ -87,22 +85,12 @@ module CLIChess
       File.open(read_from, 'r') do |file|
         file.each_line do |input_line|
           tokens.load_tokens(input_line)
-          parse_line(token_list: tokens, statement: tokens.statement)
+          parse_line(token_list: tokens.tokens, statement: tokens.statement)
           parser_trees << [tokens.statement, parser_tree]
         end
       end
       save_parser_trees(save_to: save_to)
     end
-
-    # def load_tokens(input_line)
-    #   # load tokens serialized by the tokenizer.
-    #   token_list = rebuild(JSON.load(input_line))
-    #   token_list[1].each do |token|
-    #     token.type = token.type.to_sym
-    #   end
-    #   self.statement = token_list[0].chomp
-    #   self.tokens = token_list[1]
-    # end
 
     def save_parser_trees(save_to:)
       # serialize parser trees and save them to file.
@@ -117,61 +105,6 @@ module CLIChess
 
     attr_accessor :pos, :lines, :parser_trees
     attr_writer :statement
-
-    # def tokens.current
-    #   tokens[pos]
-    # end
-
-    # def tokens.peek_next
-    #   tokens[pos + 1]
-    # end
-
-    # def advance
-    #   self.pos += 1
-    # end
-
-    # def tokens.insert_token(token)
-    #   tokens[pos] = token
-    # end
-
-    def consume(expected_type: nil, expected_value: nil)
-      if tokens.current.nil?
-        # ran out of tokens prematurely.
-        tokens.insert_token(tokens.error_token(
-                              error_msg: 'SyntaxError, unexpected end of line',
-                              position_offset: 1
-                            ))
-        return
-      end
-
-      if parse_error?(expected_type, expected_value)
-        msg = "SyntaxError: unexpected token type \"#{tokens.current.type}\", " \
-              "value \"#{tokens.current.name}\""
-        tokens.insert_token(tokens.error_token(error_msg: msg))
-        return
-      end
-
-      tokens.advance
-    end
-
-    def parse_error?(expected_type, expected_value)
-      return true unless expected_type?(expected_type)
-      return true unless expected_value?(expected_value)
-
-      false
-    end
-
-    def expected_type?(type = nil)
-      return true if type.nil?
-
-      type.any?(tokens.current.type)
-    end
-
-    def expected_value?(value = nil)
-      return true if value.nil?
-
-      value.any?(tokens.current.name)
-    end
 
     def parse_statement
       # process keywords here as well.
@@ -202,7 +135,7 @@ module CLIChess
     def command_new_window
       # new_window type='simple', origin='1;1', columns=30, rows=20
       token = tokens.current
-      consume(expected_type: [:keyword], expected_value: ['new_window'])
+      consume.consume(expected_type: [:keyword], expected_value: ['new_window'])
       cmd_node = command_node(token, :console_command)
 
       var_names = %w[type origin columns rows]
@@ -212,7 +145,7 @@ module CLIChess
       var_names.delete(var_name)
 
       while tokens.current&.type == :punctuation && tokens.current&.name == ','
-        consume(expected_type: [:punctuation], expected_value: [','])
+        consume.consume(expected_type: [:punctuation], expected_value: [','])
         var_name = tokens.current.name if tokens.current&.type == :variable
         cmd_node.args << parse_assignment(var_names: var_names)
         var_names.delete(var_name)
@@ -242,8 +175,8 @@ module CLIChess
       # a = 2
       # var_names -> list of allowed names, optional
       token = tokens.current # variable
-      consume(expected_type: %i[variable], expected_value: var_names)
-      consume(expected_type: %i[assignment], expected_value: ['='])
+      consume.consume(expected_type: %i[variable], expected_value: var_names)
+      consume.consume(expected_type: %i[assignment], expected_value: ['='])
 
       unless tokens.current&.type == :error
         return assignment_node(token,
@@ -298,7 +231,7 @@ module CLIChess
       node = callback.call
       while binary_operator?(op_type)
         token = tokens.current
-        consume(expected_type: %i[operator comparison])
+        consume.consume(expected_type: %i[operator comparison])
         right_node = callback.call
         node = binary_node(token, node, right_node)
       end
@@ -321,7 +254,7 @@ module CLIChess
 
       # advance past the operator token
       token = tokens.current
-      consume(expected_type: %i[operator logical])
+      consume.consume(expected_type: %i[operator logical])
 
       unary_node(token, parse_unary)
     end
@@ -365,11 +298,11 @@ module CLIChess
 
     def function
       token = tokens.current
-      consume(expected_type: [:variable])
-      consume(expected_type: [:punctuation], expected_value: ['('])
+      consume.consume(expected_type: [:variable])
+      consume.consume(expected_type: [:punctuation], expected_value: ['('])
 
       args = function_args
-      consume(expected_type: [:punctuation], expected_value: [')'])
+      consume.consume(expected_type: [:punctuation], expected_value: [')'])
       function_node(token, args)
     end
 
@@ -382,7 +315,7 @@ module CLIChess
       args = []
       args << parse_expression
       while tokens.current && tokens.current.type == :punctuation && tokens.current.name == ','
-        consume(expected_type: [:punctuation], expected_value: [','])
+        consume.consume(expected_type: [:punctuation], expected_value: [','])
         args << parse_expression
       end
       args
@@ -409,11 +342,11 @@ module CLIChess
     end
 
     def expression_group
-      consume(expected_type: %i[punctuation], expected_value: ['('])
+      consume.consume(expected_type: %i[punctuation], expected_value: ['('])
       expr = parse_expression
       return expr if expr.type == :error
 
-      consume(expected_type: %i[punctuation], expected_value: [')'])
+      consume.consume(expected_type: %i[punctuation], expected_value: [')'])
       expr
     end
 
@@ -427,7 +360,7 @@ module CLIChess
 
     def primary_value_node(type)
       token = tokens.current
-      consume(expected_type: [type])
+      consume.consume(expected_type: [type])
 
       PRIMARY_NODE_TYPES[type].new(parms: {
                                      line: token.line,
@@ -435,16 +368,6 @@ module CLIChess
                                      value: token.name
                                    })
     end
-
-    # def tokens.error_token(error_msg: nil, position_offset: 0)
-    #   token = tokens.current || tokens[-1]
-    #   Token.new(
-    #     type: :error,
-    #     name: error_msg,
-    #     line: token.line,
-    #     col: token.col + position_offset
-    #   )
-    # end
 
     def error_node
       msg = tokens.current.name if tokens.current.type == :error

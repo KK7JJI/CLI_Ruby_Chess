@@ -4,31 +4,33 @@
 module CLIChess
   # consume methods, used in recursive descent
   class Consume
-    attr_reader :parser
+    attr_reader :tokens
 
-    def initialize(parser: nil)
-      @parser = parser
+    def initialize(tokens: nil)
+      @tokens = tokens
     end
 
     def consume(expected_type: nil, expected_value: nil)
-      if current.nil?
+      if tokens.current.nil?
         # ran out of tokens prematurely.
-        insert_token(error_token(
-                       error_msg: 'SyntaxError, unexpected end of line',
-                       position_offset: 1
-                     ))
+        tokens.insert_token(tokens.error_token(
+                              error_msg: 'SyntaxError, unexpected end of line',
+                              position_offset: 1
+                            ))
         return
       end
 
       if parse_error?(expected_type, expected_value)
-        msg = "SyntaxError: unexpected token type \"#{current.type}\", " \
-              "value \"#{current.name}\""
-        insert_token(error_token(error_msg: msg))
+        msg = "SyntaxError: unexpected token type \"#{tokens.current.type}\", " \
+              "value \"#{tokens.current.name}\""
+        tokens.insert_token(tokens.error_token(error_msg: msg))
         return
       end
 
-      advance
+      tokens.advance
     end
+
+    private
 
     def parse_error?(expected_type, expected_value)
       return true unless expected_type?(expected_type)
@@ -40,13 +42,13 @@ module CLIChess
     def expected_type?(type = nil)
       return true if type.nil?
 
-      type.any?(current.type)
+      type.any?(tokens.current.type)
     end
 
     def expected_value?(value = nil)
       return true if value.nil?
 
-      value.any?(current.name)
+      value.any?(tokens.current.name)
     end
   end
 end

@@ -11,7 +11,13 @@ module CLIChess
     def initialize
       @statement = nil
       @pos = 0
-      @tokens = nil
+      @tokens = []
+    end
+
+    def empty?
+      return true if tokens.nil?
+
+      tokens.empty?
     end
 
     def current
@@ -54,14 +60,6 @@ module CLIChess
         line: token.line,
         col: token.col + position_offset
       )
-    end
-
-    # garbage collection, if we didn't process all tokens
-    # then there was an error in the original expression.
-    def unexpected_tokens
-      msg = "SyntaxError, unexpected token \"#{current.name}\""
-      insert_token(error_token(error_msg: msg))
-      error_node
     end
   end
 end
