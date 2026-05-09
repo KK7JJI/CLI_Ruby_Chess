@@ -35,16 +35,18 @@ module CLIChess
 
     def initialize
       @statement = nil
-      @tokens = nil
       @parser_tree = nil
       @parser_trees = []
+
+      # @tokens = nil
+      @tokens = TokenList.new
     end
 
     def pretty_print
       return parser_tree.pretty_print if parser_trees.empty?
 
       parser_trees.each do |parser_tree|
-        if statement
+        if tokens.statement
           puts "statement: '#{parser_tree[0]}'"
           puts '=' * 20
         end
@@ -56,18 +58,19 @@ module CLIChess
     def parse_line(token_list: nil, statement: nil)
       return if token_list.empty?
 
-      self.statement = statement
-      self.tokens = token_list
+      # self.statement = statement
+      tokens.load_list(statement, token_list)
+      # self.tokens = token_list
       self.parser_tree = nil
-      self.pos = 0
+      # self.pos = 0
 
       self.parser_tree = parse_statement
 
       # if an error occured collape the parser tree
       # for the evaluator.
-      if current&.type == :error
+      if tokens.current&.type == :error
         self.parser_tree = error_node
-      elsif !current.nil?
+      elsif !tokens.current.nil?
         self.parser_tree = unexpected_tokens
       end
     end
@@ -75,31 +78,31 @@ module CLIChess
     # garbage collection, if we didn't process all tokens
     # then there was an error in the original expression.
     def unexpected_tokens
-      msg = "SyntaxError, unexpected token \"#{current.name}\""
-      insert_token(error_token(error_msg: msg))
+      msg = "SyntaxError, unexpected token \"#{tokens.current.name}\""
+      tokens.insert_token(tokens.error_token(error_msg: msg))
       error_node
     end
 
     def parse_file_input(read_from: 'tokens.data', save_to: 'parser.data')
       File.open(read_from, 'r') do |file|
         file.each_line do |input_line|
-          load_tokens(input_line)
-          parse_line(token_list: tokens, statement: statement)
-          parser_trees << [statement, parser_tree]
+          tokens.load_tokens(input_line)
+          parse_line(token_list: tokens, statement: tokens.statement)
+          parser_trees << [tokens.statement, parser_tree]
         end
       end
       save_parser_trees(save_to: save_to)
     end
 
-    def load_tokens(input_line)
-      # load tokens serialized by the tokenizer.
-      token_list = rebuild(JSON.load(input_line))
-      token_list[1].each do |token|
-        token.type = token.type.to_sym
-      end
-      self.statement = token_list[0].chomp
-      self.tokens = token_list[1]
-    end
+    # def load_tokens(input_line)
+    #   # load tokens serialized by the tokenizer.
+    #   token_list = rebuild(JSON.load(input_line))
+    #   token_list[1].each do |token|
+    #     token.type = token.type.to_sym
+    #   end
+    #   self.statement = token_list[0].chomp
+    #   self.tokens = token_list[1]
+    # end
 
     def save_parser_trees(save_to:)
       # serialize parser trees and save them to file.
@@ -115,45 +118,40 @@ module CLIChess
     attr_accessor :pos, :lines, :parser_trees
     attr_writer :statement
 
-    def current
-      tokens[pos]
-    end
+    # def tokens.current
+    #   tokens[pos]
+    # end
 
-    def peek_next
-      tokens[pos + 1]
-    end
+    # def tokens.peek_next
+    #   tokens[pos + 1]
+    # end
 
-    def advance
-      self.pos += 1
-    end
+    # def advance
+    #   self.pos += 1
+    # end
 
-    def advance_to_end
-      self.pos = tokens.length - 1
-    end
-
-    def insert_token(token)
-      tokens[pos] = token
-      # self.tokens = tokens[0, pos] + [token] + tokens[pos, tokens.length - 1]
-    end
+    # def tokens.insert_token(token)
+    #   tokens[pos] = token
+    # end
 
     def consume(expected_type: nil, expected_value: nil)
-      if current.nil?
+      if tokens.current.nil?
         # ran out of tokens prematurely.
-        insert_token(error_token(
-                       error_msg: 'SyntaxError, unexpected end of line',
-                       position_offset: 1
-                     ))
+        tokens.insert_token(tokens.error_token(
+                              error_msg: 'SyntaxError, unexpected end of line',
+                              position_offset: 1
+                            ))
         return
       end
 
       if parse_error?(expected_type, expected_value)
-        msg = "SyntaxError: unexpected token type \"#{current.type}\", " \
-              "value \"#{current.name}\""
-        insert_token(error_token(error_msg: msg))
+        msg = "SyntaxError: unexpected token type \"#{tokens.current.type}\", " \
+              "value \"#{tokens.current.name}\""
+        tokens.insert_token(tokens.error_token(error_msg: msg))
         return
       end
 
-      advance
+      tokens.advance
     end
 
     def parse_error?(expected_type, expected_value)
@@ -166,25 +164,27 @@ module CLIChess
     def expected_type?(type = nil)
       return true if type.nil?
 
-      type.any?(current.type)
+      type.any?(tokens.current.type)
     end
 
     def expected_value?(value = nil)
       return true if value.nil?
 
-      value.any?(current.name)
+      value.any?(tokens.current.name)
     end
 
     def parse_statement
       # process keywords here as well.
-      return parse_command if current.type == :keyword
+      return parse_command if tokens.current.type == :keyword
       return parse_assignment if variable_assignment?
 
       parse_expression
     end
 
     def parse_command
-      return unless current&.type == :keyword && current&.name == 'new_window'
+      unless tokens.current&.type == :keyword && tokens.current&.name == 'new_window'
+        return
+      end
 
       command_new_window
     end
@@ -201,37 +201,39 @@ module CLIChess
 
     def command_new_window
       # new_window type='simple', origin='1;1', columns=30, rows=20
-      token = current
+      token = tokens.current
       consume(expected_type: [:keyword], expected_value: ['new_window'])
       cmd_node = command_node(token, :console_command)
 
       var_names = %w[type origin columns rows]
 
-      var_name = current&.name if current&.type == :variable
+      var_name = tokens.current&.name if tokens.current&.type == :variable
       cmd_node.args << parse_assignment(var_names: var_names)
       var_names.delete(var_name)
 
-      while current&.type == :punctuation && current&.name == ','
+      while tokens.current&.type == :punctuation && tokens.current&.name == ','
         consume(expected_type: [:punctuation], expected_value: [','])
-        var_name = current.name if current&.type == :variable
+        var_name = tokens.current.name if tokens.current&.type == :variable
         cmd_node.args << parse_assignment(var_names: var_names)
         var_names.delete(var_name)
       end
 
       var_names = var_names.map { |name| "\"#{name}\"" }
       msg = "\"#{cmd_node.value}\" missing arguments #{var_names.join(', ')}"
-      insert_token(error_token(error_msg: msg)) unless var_names.empty?
+      unless var_names.empty?
+        tokens.insert_token(tokens.error_token(error_msg: msg))
+      end
 
-      return cmd_node unless current&.type == :error
+      return cmd_node unless tokens.current&.type == :error
 
-      insert_token(error_token(error_msg: msg))
+      tokens.insert_token(tokens.error_token(error_msg: msg))
       error_node
     end
 
     def variable_assignment?
-      return false unless current.type == :variable
-      return false unless peek_next
-      return false unless peek_next.type == :assignment
+      return false unless tokens.current.type == :variable
+      return false unless tokens.peek_next
+      return false unless tokens.peek_next.type == :assignment
 
       true
     end
@@ -239,11 +241,11 @@ module CLIChess
     def parse_assignment(var_names: nil)
       # a = 2
       # var_names -> list of allowed names, optional
-      token = current # variable
+      token = tokens.current # variable
       consume(expected_type: %i[variable], expected_value: var_names)
       consume(expected_type: %i[assignment], expected_value: ['='])
 
-      unless current&.type == :error
+      unless tokens.current&.type == :error
         return assignment_node(token,
                                parse_expression)
       end
@@ -285,9 +287,9 @@ module CLIChess
     end
 
     def binary_operator?(op_type)
-      return false if current.nil?
-      return false unless %i[operator comparison].include?(current.type)
-      return false unless BINARY_OP_TYPES[op_type].include?(current.name)
+      return false if tokens.current.nil?
+      return false unless %i[operator comparison].include?(tokens.current.type)
+      return false unless BINARY_OP_TYPES[op_type].include?(tokens.current.name)
 
       true
     end
@@ -295,7 +297,7 @@ module CLIChess
     def parse_binary(callback, op_type)
       node = callback.call
       while binary_operator?(op_type)
-        token = current
+        token = tokens.current
         consume(expected_type: %i[operator comparison])
         right_node = callback.call
         node = binary_node(token, node, right_node)
@@ -318,16 +320,16 @@ module CLIChess
       return parse_primary unless unary_operator?
 
       # advance past the operator token
-      token = current
+      token = tokens.current
       consume(expected_type: %i[operator logical])
 
       unary_node(token, parse_unary)
     end
 
     def unary_operator?
-      return false if current.nil?
-      return false unless %i[operator logical].include?(current.type)
-      return false unless UNARY_OPS.include?(current.name)
+      return false if tokens.current.nil?
+      return false unless %i[operator logical].include?(tokens.current.type)
+      return false unless UNARY_OPS.include?(tokens.current.name)
 
       true
     end
@@ -342,11 +344,11 @@ module CLIChess
     end
 
     def parse_primary
-      unless current.nil?
+      unless tokens.current.nil?
         return function if function?
 
         %i[integer string boolean variable].each do |type|
-          next unless current.type == type
+          next unless tokens.current.type == type
 
           return primary_value_node(type)
         end
@@ -357,12 +359,12 @@ module CLIChess
       # we are either out of tokens or one has made
       # its way here which doesn't belong here.
       msg = 'SyntaxError, incomplete expression.'
-      insert_token(error_token(error_msg: msg))
+      tokens.insert_token(tokens.error_token(error_msg: msg))
       error_node
     end
 
     def function
-      token = current
+      token = tokens.current
       consume(expected_type: [:variable])
       consume(expected_type: [:punctuation], expected_value: ['('])
 
@@ -372,12 +374,14 @@ module CLIChess
     end
 
     def function_args
-      return [] if current.nil?
-      return [] if current.name == ')' && current.type == :punctuation
+      return [] if tokens.current.nil?
+      if tokens.current.name == ')' && tokens.current.type == :punctuation
+        return []
+      end
 
       args = []
       args << parse_expression
-      while current && current.type == :punctuation && current.name == ','
+      while tokens.current && tokens.current.type == :punctuation && tokens.current.name == ','
         consume(expected_type: [:punctuation], expected_value: [','])
         args << parse_expression
       end
@@ -395,11 +399,11 @@ module CLIChess
     end
 
     def function?
-      return false if current.nil?
-      return false unless current.type == :variable
-      return false unless peek_next
-      return false unless peek_next.type == :punctuation
-      return false unless peek_next.name == '('
+      return false if tokens.current.nil?
+      return false unless tokens.current.type == :variable
+      return false unless tokens.peek_next
+      return false unless tokens.peek_next.type == :punctuation
+      return false unless tokens.peek_next.name == '('
 
       true
     end
@@ -414,15 +418,15 @@ module CLIChess
     end
 
     def expression_group?
-      return false if current.nil?
-      return false unless current.type == :punctuation
-      return false unless current.name == '('
+      return false if tokens.current.nil?
+      return false unless tokens.current.type == :punctuation
+      return false unless tokens.current.name == '('
 
       true
     end
 
     def primary_value_node(type)
-      token = current
+      token = tokens.current
       consume(expected_type: [type])
 
       PRIMARY_NODE_TYPES[type].new(parms: {
@@ -432,22 +436,22 @@ module CLIChess
                                    })
     end
 
-    def error_token(error_msg: nil, position_offset: 0)
-      token = current || tokens[-1]
-      Token.new(
-        type: :error,
-        name: error_msg,
-        line: token.line,
-        col: token.col + position_offset
-      )
-    end
+    # def tokens.error_token(error_msg: nil, position_offset: 0)
+    #   token = tokens.current || tokens[-1]
+    #   Token.new(
+    #     type: :error,
+    #     name: error_msg,
+    #     line: token.line,
+    #     col: token.col + position_offset
+    #   )
+    # end
 
     def error_node
-      msg = current.name if current.type == :error
+      msg = tokens.current.name if tokens.current.type == :error
       ErrorNode.new(parms: {
                       type: :error,
-                      line: current.line,
-                      start_pos: current.col,
+                      line: tokens.current.line,
+                      start_pos: tokens.current.col,
                       error_msg: msg
                     })
     end

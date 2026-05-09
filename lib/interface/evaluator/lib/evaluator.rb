@@ -15,6 +15,11 @@ module CLIChess
       @result = nil
       @statement = nil
 
+      initialize_handlers
+      initialize_console_handlers
+    end
+
+    def initialize_handlers
       @binary_expression = BinaryOp.new(evaluator: self)
       @unary_expression = UnaryOp.new(evaluator: self)
       @resolve_variables = ResolveVariables.new
@@ -22,7 +27,9 @@ module CLIChess
       @runtime_value = RuntimeValue.new
       @eval_functions = EvalFunctions.new(evaluator: self)
       @eval_commands = EvalCommands.new(evaluator: self)
+    end
 
+    def initialize_console_handlers
       @eval_console_commands = EvalConsoleCommands.new(
         evaluator: self,
         display: display
