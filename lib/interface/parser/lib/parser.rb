@@ -301,51 +301,6 @@ module CLIChess
       error_node
     end
 
-    # def function
-    #   token = tokens.current
-    #   consume.consume(expected_type: [:variable])
-    #   consume.consume(expected_type: [:punctuation], expected_value: ['('])
-
-    #   args = function_args
-    #   consume.consume(expected_type: [:punctuation], expected_value: [')'])
-    #   function_node(token, args)
-    # end
-
-    # def function_args
-    #   return [] if tokens.current.nil?
-    #   if tokens.current.name == ')' && tokens.current.type == :punctuation
-    #     return []
-    #   end
-
-    #   args = []
-    #   args << parse_expression
-    #   while tokens.current && tokens.current.type == :punctuation && tokens.current.name == ','
-    #     consume.consume(expected_type: [:punctuation], expected_value: [','])
-    #     args << parse_expression
-    #   end
-    #   args
-    # end
-
-    # def function_node(token, args)
-    #   FunctionNode.new(parms: {
-    #                      type: :function,
-    #                      line: token.line,
-    #                      start_pos: token.col,
-    #                      func: token.name,
-    #                      args: args
-    #                    })
-    # end
-
-    # def function?
-    #   return false if tokens.current.nil?
-    #   return false unless tokens.current.type == :variable
-    #   return false unless tokens.peek_next
-    #   return false unless tokens.peek_next.type == :punctuation
-    #   return false unless tokens.peek_next.name == '('
-
-    #   true
-    # end
-
     def expression_group
       consume.consume(expected_type: %i[punctuation], expected_value: ['('])
       expr = parse_expression
