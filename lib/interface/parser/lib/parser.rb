@@ -5,9 +5,10 @@ module CLIChess
   # recursive descent
   class Parser
     include Serialize
+    include NewErrorNode
 
     attr_accessor :parser_tree
-    attr_reader :statement, :consume, :tokens, :function
+    attr_reader :statement, :consume, :tokens, :assignment, :function
 
     ASSIGNMENT_OPS = ['='].freeze
     MULTIPLICATIVE_OPS = ['*', '/', '%'].freeze
@@ -40,6 +41,8 @@ module CLIChess
 
       @tokens = TokenList.new
       @consume = Consume.new(tokens: @tokens)
+      @assignment = Assignment.new(parser: self, consume: @consume,
+                                   tokens: @tokens)
       @function = Function.new(parser: self, consume: @consume, tokens: @tokens)
     end
 
@@ -67,7 +70,7 @@ module CLIChess
       # if an error occured collape the parser tree
       # for the evaluator.
       if tokens.current&.type == :error
-        self.parser_tree = error_node
+        self.parser_tree = new_error_node
       elsif !tokens.current.nil?
         self.parser_tree = unexpected_tokens
       end
@@ -78,7 +81,7 @@ module CLIChess
     def unexpected_tokens
       msg = "SyntaxError, unexpected token \"#{tokens.current.name}\""
       tokens.insert_token(tokens.error_token(error_msg: msg))
-      error_node
+      new_error_node
     end
 
     def parse_file_input(read_from: 'tokens.data', save_to: 'parser.data')
@@ -113,7 +116,9 @@ module CLIChess
     def parse_statement
       # process keywords here as well.
       return parse_command if tokens.current.type == :keyword
-      return parse_assignment if variable_assignment?
+
+      assignment_node = assignment.parse_assignment
+      return assignment_node unless assignment_node.nil?
 
       parse_expression
     end
@@ -142,16 +147,18 @@ module CLIChess
       consume.consume(expected_type: [:keyword], expected_value: ['new_window'])
       cmd_node = command_node(token, :console_command)
 
+      # var_names -> user supplied arguments, type, origin, columns, rows
+      # each occurs only one time.
       var_names = %w[type origin columns rows]
 
       var_name = tokens.current&.name if tokens.current&.type == :variable
-      cmd_node.args << parse_assignment(var_names: var_names)
+      cmd_node.args << assignment.parse_assignment(var_names: var_names)
       var_names.delete(var_name)
 
       while tokens.current&.type == :punctuation && tokens.current&.name == ','
         consume.consume(expected_type: [:punctuation], expected_value: [','])
         var_name = tokens.current.name if tokens.current&.type == :variable
-        cmd_node.args << parse_assignment(var_names: var_names)
+        cmd_node.args << assignment.parse_assignment(var_names: var_names)
         var_names.delete(var_name)
       end
 
@@ -164,39 +171,7 @@ module CLIChess
       return cmd_node unless tokens.current&.type == :error
 
       tokens.insert_token(tokens.error_token(error_msg: msg))
-      error_node
-    end
-
-    def variable_assignment?
-      return false unless tokens.current.type == :variable
-      return false unless tokens.peek_next
-      return false unless tokens.peek_next.type == :assignment
-
-      true
-    end
-
-    def parse_assignment(var_names: nil)
-      # a = 2
-      # var_names -> list of allowed names, optional
-      token = tokens.current # variable
-      consume.consume(expected_type: %i[variable], expected_value: var_names)
-      consume.consume(expected_type: %i[assignment], expected_value: ['='])
-
-      unless tokens.current&.type == :error
-        return assignment_node(token,
-                               parse_expression)
-      end
-
-      error_node
-    end
-
-    def assignment_node(token, node)
-      AssignmentNode.new(parms: {
-                           line: token.line,
-                           start_pos: token.col,
-                           value: token.name,
-                           assigned_node: node
-                         })
+      new_error_node
     end
 
     def parse_expression
@@ -298,7 +273,7 @@ module CLIChess
       # its way here which doesn't belong here.
       msg = 'SyntaxError, incomplete expression.'
       tokens.insert_token(tokens.error_token(error_msg: msg))
-      error_node
+      new_error_node
     end
 
     def expression_group
@@ -327,16 +302,6 @@ module CLIChess
                                      start_pos: token.col,
                                      value: token.name
                                    })
-    end
-
-    def error_node
-      msg = tokens.current.name if tokens.current.type == :error
-      ErrorNode.new(parms: {
-                      type: :error,
-                      line: tokens.current.line,
-                      start_pos: tokens.current.col,
-                      error_msg: msg
-                    })
     end
   end
 end
