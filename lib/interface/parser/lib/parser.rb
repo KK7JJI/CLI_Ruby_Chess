@@ -8,7 +8,7 @@ module CLIChess
     include NewErrorNode
 
     attr_accessor :parser_tree
-    attr_reader :statement, :consume, :tokens, :assignment, :function
+    attr_reader :statement, :consume, :tokens, :assignment, :function, :command
 
     ASSIGNMENT_OPS = ['='].freeze
     MULTIPLICATIVE_OPS = ['*', '/', '%'].freeze
@@ -41,9 +41,16 @@ module CLIChess
 
       @tokens = TokenList.new
       @consume = Consume.new(tokens: @tokens)
-      @assignment = Assignment.new(parser: self, consume: @consume,
-                                   tokens: @tokens)
-      @function = Function.new(parser: self, consume: @consume, tokens: @tokens)
+
+      @parms = {
+        parser: self,
+        consume: @consume,
+        tokens: @tokens
+      }
+
+      @assignment = Assignment.new(parms: @parms)
+      @function = Function.new(parms: @parms)
+      @command = Command.new(parms: @parms.merge({ assignment: @assignment }))
     end
 
     def pretty_print
@@ -114,8 +121,8 @@ module CLIChess
     attr_writer :statement
 
     def parse_statement
-      # process keywords here as well.
-      return parse_command if tokens.current.type == :keyword
+      command_node = command.parse_command
+      return command_node unless command_node.nil?
 
       assignment_node = assignment.parse_assignment
       return assignment_node unless assignment_node.nil?
@@ -123,56 +130,56 @@ module CLIChess
       parse_expression
     end
 
-    def parse_command
-      unless tokens.current&.type == :keyword && tokens.current&.name == 'new_window'
-        return
-      end
+    # def parse_command
+    #   unless tokens.current&.type == :keyword && tokens.current&.name == 'new_window'
+    #     return
+    #   end
 
-      command_new_window
-    end
+    #   command_new_window
+    # end
 
-    def command_node(token, type, args = [])
-      CommandNode.new(parms: {
-                        type: type,
-                        value: token.name,
-                        args: args,
-                        line: token.line,
-                        start_pos: token.col
-                      })
-    end
+    # def command_node(token, type, args = [])
+    #   CommandNode.new(parms: {
+    #                     type: type,
+    #                     value: token.name,
+    #                     args: args,
+    #                     line: token.line,
+    #                     start_pos: token.col
+    #                   })
+    # end
 
-    def command_new_window
-      # new_window type='simple', origin='1;1', columns=30, rows=20
-      token = tokens.current
-      consume.consume(expected_type: [:keyword], expected_value: ['new_window'])
-      cmd_node = command_node(token, :console_command)
+    # def command_new_window
+    #   # new_window type='simple', origin='1;1', columns=30, rows=20
+    #   token = tokens.current
+    #   consume.consume(expected_type: [:keyword], expected_value: ['new_window'])
+    #   cmd_node = command_node(token, :console_command)
 
-      # var_names -> user supplied arguments, type, origin, columns, rows
-      # each occurs only one time.
-      var_names = %w[type origin columns rows]
+    #   # var_names -> user supplied arguments, type, origin, columns, rows
+    #   # each occurs only one time.
+    #   var_names = %w[type origin columns rows]
 
-      var_name = tokens.current&.name if tokens.current&.type == :variable
-      cmd_node.args << assignment.parse_assignment(var_names: var_names)
-      var_names.delete(var_name)
+    #   var_name = tokens.current&.name if tokens.current&.type == :variable
+    #   cmd_node.args << assignment.parse_assignment(var_names: var_names)
+    #   var_names.delete(var_name)
 
-      while tokens.current&.type == :punctuation && tokens.current&.name == ','
-        consume.consume(expected_type: [:punctuation], expected_value: [','])
-        var_name = tokens.current.name if tokens.current&.type == :variable
-        cmd_node.args << assignment.parse_assignment(var_names: var_names)
-        var_names.delete(var_name)
-      end
+    #   while tokens.current&.type == :punctuation && tokens.current&.name == ','
+    #     consume.consume(expected_type: [:punctuation], expected_value: [','])
+    #     var_name = tokens.current.name if tokens.current&.type == :variable
+    #     cmd_node.args << assignment.parse_assignment(var_names: var_names)
+    #     var_names.delete(var_name)
+    #   end
 
-      var_names = var_names.map { |name| "\"#{name}\"" }
-      msg = "\"#{cmd_node.value}\" missing arguments #{var_names.join(', ')}"
-      unless var_names.empty?
-        tokens.insert_token(tokens.error_token(error_msg: msg))
-      end
+    #   var_names = var_names.map { |name| "\"#{name}\"" }
+    #   msg = "\"#{cmd_node.value}\" missing arguments #{var_names.join(', ')}"
+    #   unless var_names.empty?
+    #     tokens.insert_token(tokens.error_token(error_msg: msg))
+    #   end
 
-      return cmd_node unless tokens.current&.type == :error
+    #   return cmd_node unless tokens.current&.type == :error
 
-      tokens.insert_token(tokens.error_token(error_msg: msg))
-      new_error_node
-    end
+    #   tokens.insert_token(tokens.error_token(error_msg: msg))
+    #   new_error_node
+    # end
 
     def parse_expression
       parse_logical_or

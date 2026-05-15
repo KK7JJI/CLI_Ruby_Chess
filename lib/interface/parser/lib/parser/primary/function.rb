@@ -6,10 +6,10 @@ module CLIChess
   class Function
     attr_reader :tokens, :parser, :consume
 
-    def initialize(parser: nil, consume: nil, tokens: nil)
-      @tokens = tokens
-      @parser = parser
-      @consume = consume
+    def initialize(parms:)
+      @tokens = parms[:tokens]
+      @parser = parms[:parser]
+      @consume = parms[:consume]
     end
 
     def new_function_node

@@ -33,12 +33,13 @@ def run_script(filename)
   evaluator
 end
 
-# expr = 'new_window type="simple", origin="5;5", columns=20, rows=40'
-# result = evaluate(expr)
-# puts "result => (#{result})"
+expr = 'new_window type="simple", origin="5;5", columns=20, rows=40'
+# expr = 'new_window'
+result = evaluate(expr)
+puts "result => (#{result})"
 
-filename = 'sample.chess'
-puts run_script(filename).inspect
+# filename = 'sample.chess'
+# puts run_script(filename).inspect
 
 # repl = CLIChess::REPL.new
 # repl.repl_loop

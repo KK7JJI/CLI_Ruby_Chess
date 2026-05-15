@@ -2,16 +2,16 @@
 
 # project namespace
 module CLIChess
-  # consume methods, used in recursive descent
+  # assign value to a variable
   class Assignment
     include NewErrorNode
 
     attr_reader :tokens, :consume, :parser
 
-    def initialize(parser: nil, consume: nil, tokens: nil)
-      @tokens = tokens
-      @consume = consume
-      @parser = parser
+    def initialize(parms:)
+      @tokens = parms[:tokens]
+      @consume = parms[:consume]
+      @parser = parms[:parser]
     end
 
     def parse_assignment(var_names: nil)
@@ -28,10 +28,11 @@ module CLIChess
                                parser.parse_new_expression)
       end
 
-      error_node
+      new_error_node
     end
 
     def variable_assignment?
+      return false if tokens.current.nil?
       return false unless tokens.current.type == :variable
       return false unless tokens.peek_next
       return false unless tokens.peek_next.type == :assignment

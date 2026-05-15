@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'lib/parser/output_msg'
 require_relative 'lib/nodes/node'
 require_relative 'lib/nodes/integer_node'
 require_relative 'lib/nodes/string_node'
@@ -12,6 +13,9 @@ require_relative 'lib/nodes/error_node'
 require_relative 'lib/nodes/function_node'
 require_relative 'lib/nodes/command_node'
 require_relative 'lib/parser/new_error_node'
+require_relative 'lib/parser/command/new_command_node'
+require_relative 'lib/parser/command/new_window'
+require_relative 'lib/parser/command'
 require_relative 'lib/parser/tokens'
 require_relative 'lib/parser/consume'
 require_relative 'lib/parser/assignment'
