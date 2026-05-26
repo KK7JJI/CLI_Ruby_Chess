@@ -5,8 +5,10 @@ module CLIChess
   # superclass for console windows
   class BaseWindow
     include Constants
+    include OutputMSG
 
-    attr_accessor :reference, :win_origin, :rows, :cols, :cmds, :windows, :name
+    attr_accessor :reference, :win_origin, :rows, :cols, :cmds, :windows,
+                  :id, :name
 
     def initialize(name: 'MAIN',
                    id: 0,
@@ -53,29 +55,69 @@ module CLIChess
 
     def add_borders
       line = win_origin[0]
-      first_col = win_origin[1]
-      last_col = win_origin[1] + cols - 1
 
-      msg = "\e[#{line};#{win_origin[1]}H"
-      msg += BOX[:tl]
-      msg += BOX[:h] * (cols - 2)
-      msg += BOX[:tr]
-      cmds << msg
+      cmds << top_border
+      cmds << title_text
 
       (rows - 2).times do
         line += 1
-        msg = "\e[#{line};#{first_col}H#{BOX[:v]}"
-        cmds << msg
-        msg = "\e[#{line};#{last_col}H#{BOX[:v]}"
-        cmds << msg
+        cmds << left_border(line)
+        cmds << right_border(line)
       end
 
       line += 1
-      msg = "\e[#{line};#{first_col}H"
+      cmds << bottom_border(line)
+    end
+
+    def left_border(line)
+      first_col = win_origin[1]
+      "\e[#{line};#{first_col}H#{BOX[:v]}"
+    end
+
+    def right_border(line)
+      last_col = win_origin[1] + cols - 1
+      "\e[#{line};#{last_col}H#{BOX[:v]}"
+    end
+
+    def top_border
+      cursor_line = win_origin[0]
+      cursor_col = win_origin[1]
+      msg = "\e[#{cursor_line};#{cursor_col}H"
+      msg += BOX[:tl]
+      msg += BOX[:h] * (cols - 2)
+      msg += BOX[:tr]
+      msg
+    end
+
+    def title_text
+      txt = " #{id} "
+      txt = " #{name[0, cols - 6]} " unless name.nil?
+
+      msg = title_cursor_pos(txt)
+      msg += txt
+      msg
+    end
+
+    def title_cursor_pos(txt)
+      cursor_line = win_origin[0]
+      cursor_col = win_origin[1]
+      cursor_col += (cols / 2)
+
+      cursor_col -= (txt.length / 2)
+      "\e[#{cursor_line};#{cursor_col}H"
+    end
+
+    def bottom_border(line)
+      cursor_col = win_origin[1]
+      msg = "\e[#{line};#{cursor_col}H"
       msg += BOX[:bl]
       msg += BOX[:h] * (cols - 2)
       msg += BOX[:br]
-      cmds << msg
+      msg
+    end
+
+    def to_s
+      "#{format('%03d', id)}: #{name} -> class=#{self.class}"
     end
   end
 end

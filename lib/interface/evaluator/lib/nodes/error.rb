@@ -10,7 +10,6 @@ module CLIChess
       @type = :error
       @line = kwargs[:parms][:line]
       @start_pos = kwargs[:parms][:start_pos]
-
       @error_msg = kwargs[:parms][:error_msg]
     end
 

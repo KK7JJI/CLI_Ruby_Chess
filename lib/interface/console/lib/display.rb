@@ -5,10 +5,12 @@ module CLIChess
   # window manager
   class Display
     include Constants
+    include OutputMSG
 
-    attr_accessor :main_window, :windows, :rows, :cols
+    attr_accessor :main_window, :windows, :rows, :cols, :next_id
 
     def initialize
+      @next_id = 0
       @rows, @cols = IO.console.winsize
       @windows = []
       @main_window = new_window(option: :simple,
@@ -17,8 +19,20 @@ module CLIChess
                                 new_origin: [0, 0],
                                 cols: cols,
                                 rows: (rows - 2))
-      @windows << @main_window
       @active_window = @windows[-1]
+    end
+
+    def list_windows
+      new_window(name: 'Windows',
+                 new_origin: [2, 2],
+                 rows: 20,
+                 cols: 20,
+                 option: :scrolling)
+
+      msg = windows.map do |window|
+        "#{format('%03d', window.id)}: #{window.name}"
+      end
+      active_window.add_text(msg.join("\n"))
     end
 
     def clear_screen
@@ -64,10 +78,12 @@ module CLIChess
     end
 
     def new_window(option: :simple, **kwargs)
+      self.next_id += 1
       windows << new_simple_window(**kwargs) if option == :simple
       windows << new_scrolling_window(**kwargs) if option == :scrolling
       windows << new_interactive_window(**kwargs) if option == :interactive
 
+      # return a handle to the active window.
       windows[-1]
     end
 
@@ -103,7 +119,7 @@ module CLIChess
     def select_by_name(value)
       result = nil
       windows.each do |window|
-        if window.name == value
+        if !window.name.nil? && window.name == value
           result = window
           break
         end
@@ -114,7 +130,7 @@ module CLIChess
     def new_simple_window(**kwargs)
       SimpleWindow.new(
         name: kwargs[:name],
-        id: windows.length,
+        id: next_id,
         metrics: window_metrics(**kwargs),
         display: self
       )
@@ -123,7 +139,7 @@ module CLIChess
     def new_scrolling_window(**kwargs)
       ScrollingWindow.new(
         name: kwargs[:name],
-        id: windows.length,
+        id: next_id,
         metrics: window_metrics(**kwargs),
         display: self
       )
@@ -132,7 +148,7 @@ module CLIChess
     def new_interactive_window(**kwargs)
       InteractiveWindow.new(
         name: kwargs[:name],
-        id: windows.length,
+        id: next_id,
         metrics: window_metrics(**kwargs),
         display: self
       )

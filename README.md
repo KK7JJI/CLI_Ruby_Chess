@@ -183,3 +183,66 @@ the window superclass
 ## Simple Window
 
 ## Display
+
+# developing a new command definition
+
+Define grammar first.
+
+## console command
+
+Console commands interact with the console windowing environment, i.e.
+new_window, close_window, etc.
+
+To define a new command:
+
+### Tokenizer
+
+`interface/lib/tokenizer/tokenizer.rb`
+Tokenizer: add a new keyword to the keyword list.
+
+### Parser
+
+`interface/lib/parser/command/`
+Parser: define a new command node. The command node begins with
+a keyword token and is followed by variable assignments and values which
+serve as command arguments.
+
+The command node will contain logic which defines the expected order of
+tokens and will return an error token is something unexpected is observed.
+
+Nodes are called by class #call method i.e. `new_window.call`
+
+`lib/parser/command.rb`
+Register the new command
+
+```
+    # 1) lookup a command classname via keyword hash.
+    COMMANDS = {
+      'new_window' => NewWindowNode,
+      'list_windows' => ListWindowsNode,
+      'close_window' => CloseWindowNode
+    }
+```
+
+`interface/lib/evaluator/lib/expressions/commands`
+create a new command class object to define command behavior
+
+`interface/lib/evaluator/lib/expressions/console_commands`
+create a new command class object to define console_command behavior
+
+`interface/lib/evaluator/evaluator.rb`
+
+add required_relative path for new command class object.
+
+```
+require_relative 'lib/expressions/console_commands/list_windows'
+require_relative 'lib/expressions/console_commands/close_window'
+```
+
+`interface/lib/evaluator/commands.rb`
+
+add pointer to new command class object
+
+`interface/lib/evaluator/console_commands.rb`
+
+add pointer to new console_command class object

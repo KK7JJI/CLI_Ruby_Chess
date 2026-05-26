@@ -6,37 +6,60 @@ module CLIChess
   class NewConsoleWindow
     include ErrorMessage
 
-    attr_reader :display, :evaluator
+    attr_reader :display, :evaluator, :node
 
-    def initialize(evaluator: nil, display: nil)
-      @evaluator = evaluator
-      @display = display
+    def self.call(evaluator: nil, display: nil, node: nil)
+      new(evaluator, display, node).call
     end
 
-    def exec_new_window(node)
-      args = node.args.map do |arg|
+    def initialize(evaluator, display, node)
+      @evaluator = evaluator
+      @display = display
+      @node = node
+    end
+
+    def call
+      exec_new_window
+    end
+
+    def exec_new_window
+      args = command_args
+
+      error_msg = validate_args(args)
+      return error_msg if error_msg
+
+      display_commands
+
+      msg = "#{node.value} executed."
+      return_message(node, msg: msg)
+    end
+
+    def display_commands
+      display.new_window(
+        name: evaluator.variables['name'][:value],
+        new_origin: win_origin(evaluator.variables['origin'][:value]),
+        rows: evaluator.variables['rows'][:value],
+        cols: evaluator.variables['cols'][:value],
+        option: evaluator.variables['type'][:value].to_sym
+      )
+      display.refresh_display
+    end
+
+    def command_args
+      node.args.map do |arg|
         evaluator.walk(arg)
       end
-      args.each do |arg|
-        return arg if arg.type == :error
-      end
+    end
+
+    def validate_args(args)
+      args.each { |arg| return arg if arg.type == :error }
 
       unless new_window_valid_args?
         msg = 'One or more invalid arguments.'
         return evaluator_error(node, msg: msg)
       end
 
-      display.new_window(
-        name: '',
-        new_origin: win_origin(evaluator.variables['origin'][:value]),
-        rows: evaluator.variables['rows'][:value],
-        cols: evaluator.variables['columns'][:value],
-        option: evaluator.variables['type'][:value].to_sym
-      )
-      display.refresh_display
-
-      msg = "#{node.value} executed."
-      return_message(node, msg: msg)
+      nil
     end
 
     def new_window_valid_args?
@@ -45,8 +68,9 @@ module CLIChess
       unless /\d+[;,|]\d+/.match?(evaluator.variables['origin'][:value])
         return false
       end
+      return false unless /^\w+$/.match?(evaluator.variables['name'][:value])
       return false unless evaluator.variables['rows'][:value].is_a?(Integer)
-      return false unless evaluator.variables['columns'][:value].is_a?(Integer)
+      return false unless evaluator.variables['cols'][:value].is_a?(Integer)
       unless win_types.include?(evaluator.variables['type'][:value])
         return false
       end

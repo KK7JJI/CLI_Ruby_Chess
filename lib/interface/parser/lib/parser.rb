@@ -106,6 +106,14 @@ module CLIChess
       parse_expression
     end
 
+    def parse_new_assignment(var_names: nil)
+      parse_assignment(var_names: var_names)
+    end
+
+    def parse_new_statement
+      parse_statement
+    end
+
     def save_parser_trees(save_to:)
       # serialize parser trees and save them to file.
       File.open(save_to, 'w') do |file|
@@ -130,56 +138,10 @@ module CLIChess
       parse_expression
     end
 
-    # def parse_command
-    #   unless tokens.current&.type == :keyword && tokens.current&.name == 'new_window'
-    #     return
-    #   end
-
-    #   command_new_window
-    # end
-
-    # def command_node(token, type, args = [])
-    #   CommandNode.new(parms: {
-    #                     type: type,
-    #                     value: token.name,
-    #                     args: args,
-    #                     line: token.line,
-    #                     start_pos: token.col
-    #                   })
-    # end
-
-    # def command_new_window
-    #   # new_window type='simple', origin='1;1', columns=30, rows=20
-    #   token = tokens.current
-    #   consume.consume(expected_type: [:keyword], expected_value: ['new_window'])
-    #   cmd_node = command_node(token, :console_command)
-
-    #   # var_names -> user supplied arguments, type, origin, columns, rows
-    #   # each occurs only one time.
-    #   var_names = %w[type origin columns rows]
-
-    #   var_name = tokens.current&.name if tokens.current&.type == :variable
-    #   cmd_node.args << assignment.parse_assignment(var_names: var_names)
-    #   var_names.delete(var_name)
-
-    #   while tokens.current&.type == :punctuation && tokens.current&.name == ','
-    #     consume.consume(expected_type: [:punctuation], expected_value: [','])
-    #     var_name = tokens.current.name if tokens.current&.type == :variable
-    #     cmd_node.args << assignment.parse_assignment(var_names: var_names)
-    #     var_names.delete(var_name)
-    #   end
-
-    #   var_names = var_names.map { |name| "\"#{name}\"" }
-    #   msg = "\"#{cmd_node.value}\" missing arguments #{var_names.join(', ')}"
-    #   unless var_names.empty?
-    #     tokens.insert_token(tokens.error_token(error_msg: msg))
-    #   end
-
-    #   return cmd_node unless tokens.current&.type == :error
-
-    #   tokens.insert_token(tokens.error_token(error_msg: msg))
-    #   new_error_node
-    # end
+    def parse_assignment(var_names: nil)
+      assignment_node = assignment.parse_assignment(var_names: var_names)
+      assignment_node unless assignment_node.nil?
+    end
 
     def parse_expression
       parse_logical_or

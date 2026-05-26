@@ -1,6 +1,8 @@
-initialize
-initialize
-initialize
-initialize
-initialize
-initialize
+[#<CLIChess::IntegerValue:0x000076dcc7092e58 @type=:integer, @value=5, @line=1, @start_pos=13>]
+[#<CLIChess::IntegerValue:0x000076dcc7092e58 @type=:integer, @value=5, @line=1, @start_pos=13>]
+[#<CLIChess::StringValue:0x00007c6f2ed22f48 @type=:string, @value="Windows", @line=1, @start_pos=13>]
+[#<CLIChess::IntegerValue:0x00007c6f2ec99338 @type=:integer, @value=4, @line=1, @start_pos=13>]
+[#<CLIChess::IntegerValue:0x00007c6f2ed34248 @type=:integer, @value=8, @line=1, @start_pos=13>]
+[#<CLIChess::IntegerValue:0x00007c6f2ec83808 @type=:integer, @value=9, @line=1, @start_pos=13>]
+[#<CLIChess::IntegerValue:0x00007c6f2ec99ec8 @type=:integer, @value=10, @line=1, @start_pos=13>]
+[#<CLIChess::StringValue:0x00007c6f2ec92ee8 @type=:string, @value="Windows", @line=1, @start_pos=18>]

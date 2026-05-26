@@ -6,7 +6,8 @@ module CLIChess
   class WindowMetrics
     attr_reader :reference, :new_origin, :rows, :cols
 
-    def initialize(reference: [1, 1], new_origin: [0, 0], rows: 0, cols: 0)
+    def initialize(rows:, cols:, reference: [1, 1],
+                   new_origin: [0, 0])
       @reference = reference
       @new_origin = new_origin
       @rows = rows

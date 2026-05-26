@@ -6,23 +6,26 @@ module CLIChess
   class EvalConsoleCommands
     include ErrorMessage
 
-    attr_reader :commands, :display
+    attr_reader :commands, :display, :evaluator
 
     def initialize(evaluator: nil, display: nil)
       @evaluator = evaluator
       @display = display
 
-      @new_console_window = NewConsoleWindow.new(
-        evaluator: @evaluator, display: @display
-      )
-
       @commands = {
-        'new_window' => @new_console_window.method(:exec_new_window)
+        'new_window' => NewConsoleWindow,
+        'list_windows' => ListWindows,
+        'close_window' => CloseWindow,
+        'activate_window' => ActivateWindow
       }
     end
 
     def run_command(node)
-      return commands[node.value].call(node) if commands.key?(node.value)
+      if commands.key?(node.value)
+        return commands[node.value].call(evaluator: evaluator,
+                                         display: display,
+                                         node: node)
+      end
 
       msg = "Undefined command #{node.value}"
       ErrorMsg.new(parms: {

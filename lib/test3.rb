@@ -33,8 +33,8 @@ disp.active_window.add_text('Hi Steve', option: :center_in_row, row: 1)
 disp.active_window.add_text('Hi Steve', option: :center_in_row, row: 0)
 disp.refresh_display
 
-disp.delete_window('WIN1')
-disp.refresh_display
+# disp.delete_window('WIN1')
+# disp.refresh_display
 
 disp.new_window(name: 'WIN3',
                 new_origin: [3, 3],
@@ -45,14 +45,17 @@ disp.new_window(name: 'WIN3',
 disp.active_window.add_text(CHESS_RULES)
 disp.refresh_display
 
+disp.list_windows
+disp.refresh_display
+
 # disp.activate_window('WIN2')
 # disp.refresh_display
 
 # disp.activate_window('WIN3')
 # disp.refresh_display
 
-disp.active_window.next_page
-disp.active_window.refresh
+# disp.active_window.next_page
+# disp.active_window.refresh
 
 # disp.active_window.next_page
 # disp.refresh_display
@@ -64,5 +67,8 @@ disp.new_window(name: 'WIN5',
                 option: :interactive)
 disp.refresh_display
 disp.active_window.user_input
+
+# disp.delete_window(4)
+# disp.refresh_display
 
 print "\e[2;3H"

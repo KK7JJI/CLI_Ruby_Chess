@@ -11,7 +11,10 @@ module CLIChess
 
     # 1) lookup a command classname via keyword hash.
     COMMANDS = {
-      'new_window' => NewWindow
+      'new_window' => NewWindowNode,
+      'list_windows' => ListWindowsNode,
+      'close_window' => CloseWindowNode,
+      'activate_window' => ActivateWindowNode
     }
 
     def initialize(parms:)

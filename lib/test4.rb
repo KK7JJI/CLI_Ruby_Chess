@@ -33,8 +33,9 @@ def run_script(filename)
   evaluator
 end
 
-expr = 'new_window type="simple", origin="5;5", columns=20, rows=40'
+# expr = 'new_window type="simple", origin="5;5", columns=20, rows=40'
 # expr = 'new_window'
+expr = 'close_window name="WIN1"'
 result = evaluate(expr)
 puts "result => (#{result})"
 

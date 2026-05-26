@@ -9,6 +9,9 @@ module CLIChess
 
     KEYWORDS = %w[
       new_window
+      list_windows
+      close_window
+      activate_window
       move_window
       move
       to

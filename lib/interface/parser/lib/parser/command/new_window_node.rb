@@ -3,15 +3,15 @@
 # project namespace
 module CLIChess
   # process command new_window
-  class NewWindow
+  class NewWindowNode
     include NewErrorNode
     include NewCommandNode
     include OutputMSG
 
-    attr_accessor :return_node, :tokens, :consume, :assignment, :var_names,
+    attr_accessor :return_node, :tokens, :parser, :consume, :var_names,
                   :cmd_node
 
-    ARGUMENT_NAMES = %w[type origin columns rows].freeze
+    ARGUMENT_NAMES = %w[name type origin cols rows].freeze
     PUNCTUATION = [',', ':', ';', '--', '-'].freeze
 
     def self.call(parms:)
@@ -20,10 +20,8 @@ module CLIChess
     end
 
     def initialize(parms:)
-      output_msg(msg: __method__)
-
+      @parser = parms[:parser]
       @consume = parms[:consume]
-      @assignment = parms[:assignment]
       @tokens = parms[:tokens]
       @var_names = ARGUMENT_NAMES.map { |item| item }
       @cmd_node = nil
@@ -35,13 +33,11 @@ module CLIChess
     end
 
     def command_new_window
-      # sample> new_window type='simple', origin='1;1', columns=30, rows=20
+      # sample> new_window name='WIN0', type='simple', origin='1;1', cols=30, rows=20
 
       # 3) define expected tokens which are expected for this command keyword.
-
-      token = tokens.current
+      self.cmd_node = new_command_node(tokens.current, :console_command)
       consume.consume(expected_type: [:keyword], expected_value: ['new_window'])
-      self.cmd_node = new_command_node(token, :console_command)
       add_command_arguments
 
       # 4) return either an error node or a command node.
@@ -65,7 +61,7 @@ module CLIChess
 
     def cmd_argument
       var_name = tokens.current&.name if tokens.current&.type == :variable
-      cmd_node.args << assignment.parse_assignment(var_names: var_names)
+      cmd_node.args << parser.parse_new_assignment(var_names: var_names)
       var_names.delete(var_name)
     end
 

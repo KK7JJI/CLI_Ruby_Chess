@@ -21,8 +21,17 @@ module CLIChess
 
     private
 
+    attr_accessor :window_text
+
     def cont_initialize
-      nil
+      @window_text = {}
+    end
+
+    def queue_msg(row, col, text)
+      cursor = "\e[#{row};#{col}H"
+      msg = text.to_s
+      window_text[cursor] = msg
+      cmds << "#{cursor}#{msg}"
     end
 
     def justify_left(text, row: 1)
@@ -36,8 +45,7 @@ module CLIChess
       return nil if row <= win_origin[0]
       return nil if row >= win_origin[0] + rows - 1
 
-      msg = "\e[#{row};#{col}H#{text}"
-      cmds << msg
+      queue_msg(row, col, text)
     end
 
     def justify_right(text, row: 1)
@@ -47,12 +55,11 @@ module CLIChess
       row += win_origin[0]
       col =  cols - text.length + win_origin[1] - 1
 
-      # trucate text overflowing top a and bottom
+      # trucate text overflowing top or bottom
       return nil if row <= win_origin[0]
       return nil if row >= win_origin[0] + rows - 1
 
-      msg = "\e[#{row};#{col}H#{text}"
-      cmds << msg
+      queue_msg(row, col, text)
     end
 
     def insert_at(text, row: 1, col: 1)
@@ -71,8 +78,7 @@ module CLIChess
       return nil if row <= win_origin[0]
       return nil if row >= win_origin[0] + rows - 1
 
-      msg = "\e[#{row};#{col}H#{text}"
-      cmds << msg
+      queue_msg(row, col, text)
     end
 
     def center_in_window(text)
@@ -80,8 +86,7 @@ module CLIChess
       row = center_vertical
       col = center_text_horizontal(text)
 
-      msg = "\e[#{row};#{col}H#{text}"
-      cmds << msg
+      queue_msg(row, col, text)
     end
 
     def center_in_row(text, row: 1)
@@ -92,8 +97,8 @@ module CLIChess
 
       text = fit_text_to_row(text)
       col = center_text_horizontal(text)
-      msg = "\e[#{row};#{col}H#{text}"
-      cmds << msg
+
+      queue_msg(row, col, text)
     end
 
     def fit_text_to_row(text)

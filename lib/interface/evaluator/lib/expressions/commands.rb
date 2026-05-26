@@ -11,10 +11,6 @@ module CLIChess
     def initialize(evaluator: nil)
       @evaluator = evaluator
 
-      @new_console_window = NewConsoleWindow.new(
-        evaluator: @evaluator, display: @display
-      )
-
       @commands = {
         'no_method' => method(:do_nothing)
       }
