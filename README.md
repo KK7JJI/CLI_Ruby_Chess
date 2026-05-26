@@ -184,7 +184,7 @@ the window superclass
 
 ## Display
 
-# developing a new command definition
+# developing a new console command definition
 
 Define grammar first.
 
@@ -192,6 +192,13 @@ Define grammar first.
 
 Console commands interact with the console windowing environment, i.e.
 new_window, close_window, etc.
+
+```
+> new_window name='Window', origin='5:4', type='simple', rows=30, cols=20
+> close_window name='Window
+> list_windows
+> activate_window name = 'Window
+```
 
 To define a new command:
 
