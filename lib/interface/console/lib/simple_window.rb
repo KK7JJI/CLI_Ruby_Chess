@@ -4,6 +4,31 @@
 module CLIChess
   # window, no scrolling support
   class SimpleWindow < DisplayWindow
+    def add_new_text(text, **kwargs)
+      add_text(text, **kwargs)
+
+      window_text << {
+        text: text, kwargs: kwargs
+      }
+    end
+
+    def rebuild_text
+      self.cmds = []
+      add_borders
+
+      window_text.each do |kwargs|
+        add_text(kwargs[:text], **kwargs[:kwargs])
+      end
+    end
+
+    private
+
+    attr_accessor :window_text
+
+    def cont_initialize
+      @window_text = []
+    end
+
     def add_text(text, **kwargs)
       # trucate text overflowing the left side
       option = kwargs[:option]
@@ -19,24 +44,14 @@ module CLIChess
       nil
     end
 
-    private
-
-    attr_accessor :window_text
-
-    def cont_initialize
-      @window_text = {}
-    end
-
-    def queue_msg(row, col, text)
+    def store_msg_disp_cmd(row, col, text)
       cursor = "\e[#{row};#{col}H"
-      msg = text.to_s
-      window_text[cursor] = msg
-      cmds << "#{cursor}#{msg}"
+      cmds << "#{cursor}#{text}"
     end
 
     def justify_left(text, row: 1)
       # truncate text which overflows the line
-      text = text[0, cols - 2]
+      text = fit_text_to_row(text)
 
       row += win_origin[0]
       col = 1 + win_origin[1]
@@ -45,13 +60,12 @@ module CLIChess
       return nil if row <= win_origin[0]
       return nil if row >= win_origin[0] + rows - 1
 
-      queue_msg(row, col, text)
+      store_msg_disp_cmd(row, col, text)
     end
 
     def justify_right(text, row: 1)
       # truncate text which overflows the line
-      text = text[0, cols - 2]
-
+      text = fit_text_to_row(text)
       row += win_origin[0]
       col =  cols - text.length + win_origin[1] - 1
 
@@ -59,7 +73,7 @@ module CLIChess
       return nil if row <= win_origin[0]
       return nil if row >= win_origin[0] + rows - 1
 
-      queue_msg(row, col, text)
+      store_msg_disp_cmd(row, col, text)
     end
 
     def insert_at(text, row: 1, col: 1)
@@ -78,7 +92,7 @@ module CLIChess
       return nil if row <= win_origin[0]
       return nil if row >= win_origin[0] + rows - 1
 
-      queue_msg(row, col, text)
+      store_msg_disp_cmd(row, col, text)
     end
 
     def center_in_window(text)
@@ -86,7 +100,7 @@ module CLIChess
       row = center_vertical
       col = center_text_horizontal(text)
 
-      queue_msg(row, col, text)
+      store_msg_disp_cmd(row, col, text)
     end
 
     def center_in_row(text, row: 1)
@@ -98,7 +112,7 @@ module CLIChess
       text = fit_text_to_row(text)
       col = center_text_horizontal(text)
 
-      queue_msg(row, col, text)
+      store_msg_disp_cmd(row, col, text)
     end
 
     def fit_text_to_row(text)

@@ -4,17 +4,28 @@
 module CLIChess
   # window which allows text scrolling
   class ScrollingWindow < DisplayWindow
-    attr_accessor :stored_text, :start_line, :page
+    attr_accessor :stored_text, :start_line, :page, :initial_text
 
     def cont_initialize
       @stored_text = []
+      @initial_text = ''
       @start_line = 0
       @page = 0
     end
 
-    def add_text(text, **kwargs)
+    def add_new_text(text)
+      self.initial_text = text
       self.page = 0
-      paragraphs = text.split("\n")
+      add_text
+    end
+
+    def rebuild_text
+      cmds = []
+      add_text
+    end
+
+    def add_text
+      paragraphs = initial_text.split("\n")
       self.stored_text = []
       paragraphs.each do |paragraph|
         self.stored_text += wrap_text(paragraph).reverse

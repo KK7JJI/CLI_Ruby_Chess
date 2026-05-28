@@ -14,7 +14,8 @@ module CLIChess
       'new_window' => NewWindowNode,
       'list_windows' => ListWindowsNode,
       'close_window' => CloseWindowNode,
-      'activate_window' => ActivateWindowNode
+      'activate_window' => ActivateWindowNode,
+      'move_window' => MoveWindowNode
     }
 
     def initialize(parms:)

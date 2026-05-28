@@ -7,6 +7,8 @@ module CLIChess
     include ErrorMessage
     include OutputMSG
 
+    ARGUMENT_NAMES = %w[name id].freeze
+
     attr_reader :display, :evaluator, :node
     attr_accessor :args
 
@@ -22,7 +24,14 @@ module CLIChess
     end
 
     def call
+      initialize_arguments
       exec_close_window
+    end
+
+    def initialize_arguments
+      ARGUMENT_NAMES.each do |name|
+        evaluator.variables.delete(name)
+      end
     end
 
     def exec_close_window
@@ -39,7 +48,6 @@ module CLIChess
         return evaluator_error(node, msg: msg)
       end
 
-      output_msg(msg: "#{args.inspect}")
       display.delete_window(args[0].value) unless args.empty?
       display.delete_window if args.empty?
 

@@ -5,7 +5,7 @@ require_relative 'docs'
 require_relative 'interface/interface'
 
 disp = CLIChess::Display.new
-disp.main_window.add_text('Hello World', option: :center_in_window)
+disp.main_window.add_new_text('Hello World', option: :center_in_window)
 
 disp.new_window(name: 'WIN1',
                 new_origin: [3, 3],
@@ -13,7 +13,7 @@ disp.new_window(name: 'WIN1',
                 cols: 40,
                 option: :simple)
 
-disp.active_window.add_text('Hi there WIN1', option: :center_in_window)
+disp.active_window.add_new_text('Hi there WIN1', option: :center_in_window)
 disp.refresh_display
 
 disp.new_window(name: 'WIN2',
@@ -22,15 +22,15 @@ disp.new_window(name: 'WIN2',
                 cols: 40,
                 option: :simple)
 
-disp.active_window.add_text('Hi there WIN2!', option: :center_in_window)
+disp.active_window.add_new_text('Hi there WIN2!', option: :center_in_window)
 disp.refresh_display
 
 disp.activate_window('WIN1')
 disp.refresh_display
 
 disp.activate_window('WIN2')
-disp.active_window.add_text('Hi Steve', option: :center_in_row, row: 1)
-disp.active_window.add_text('Hi Steve', option: :center_in_row, row: 0)
+disp.active_window.add_new_text('Hi Steve', option: :center_in_row, row: 1)
+disp.active_window.add_new_text('Hi Steve', option: :center_in_row, row: 0)
 disp.refresh_display
 
 # disp.delete_window('WIN1')
@@ -42,14 +42,11 @@ disp.new_window(name: 'WIN3',
                 cols: 40,
                 option: :scrolling)
 
-disp.active_window.add_text(CHESS_RULES)
+disp.active_window.add_new_text(CHESS_RULES)
 disp.refresh_display
 
 disp.list_windows
 disp.refresh_display
-
-# disp.activate_window('WIN2')
-# disp.refresh_display
 
 # disp.activate_window('WIN3')
 # disp.refresh_display
@@ -60,6 +57,18 @@ disp.refresh_display
 # disp.active_window.next_page
 # disp.refresh_display
 
+# disp.delete_window(4)
+# disp.refresh_display
+
+disp.activate_window('WIN2')
+disp.refresh_display
+
+disp.move_window(3, [20, 6])
+disp.refresh_display
+
+disp.move_window(5, [20, 20])
+disp.refresh_display
+
 disp.new_window(name: 'WIN5',
                 new_origin: [disp.rows - 8 - 3, 1],
                 rows: 8,
@@ -68,7 +77,4 @@ disp.new_window(name: 'WIN5',
 disp.refresh_display
 disp.active_window.user_input
 
-# disp.delete_window(4)
-# disp.refresh_display
-
-print "\e[2;3H"
+print "\e[1;1H"

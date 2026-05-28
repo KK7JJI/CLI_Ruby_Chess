@@ -32,7 +32,7 @@ module CLIChess
       msg = windows.map do |window|
         "#{format('%03d', window.id)}: #{window.name}"
       end
-      active_window.add_text(msg.join("\n"))
+      active_window.add_new_text(msg.join("\n"))
     end
 
     def clear_screen
@@ -60,6 +60,15 @@ module CLIChess
 
       windows.delete(window)
       windows.push(window)
+    end
+
+    def move_window(value, new_origin)
+      # new_origin [row, col]
+      window = select_window(value)
+      return if window.nil?
+
+      window.win_origin = window.screen_relative_coords(new_origin)
+      window.rebuild_text
     end
 
     def delete_window(value)

@@ -16,7 +16,8 @@ module CLIChess
         'new_window' => NewConsoleWindow,
         'list_windows' => ListWindows,
         'close_window' => CloseWindow,
-        'activate_window' => ActivateWindow
+        'activate_window' => ActivateWindow,
+        'move_window' => MoveWindow
       }
     end
 
