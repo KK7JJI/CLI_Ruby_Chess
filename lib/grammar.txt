@@ -1,3 +1,5 @@
+new_window name='SJH', type='simple', origin='1;1', rows=30, cols=20
+
 [
  #<CLIChess::Token:0x000075106ad0f0f8 @type="operator", @name="-", @line=1, @col=0>,
  #<CLIChess::Token:0x000075106ad0e518 @type="operator", @name="-", @line=1, @col=1>,

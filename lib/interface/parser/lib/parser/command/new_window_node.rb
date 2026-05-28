@@ -6,7 +6,7 @@ module CLIChess
   class NewWindowNode < WindowNode
     ARGUMENT_NAMES = %w[name type origin cols rows].freeze
 
-    def cont_initialize(_parms:)
+    def cont_initialize(parms:)
       @mandatory_args = ARGUMENT_NAMES.map { |item| item }
       @allowed_args = ARGUMENT_NAMES.map { |item| item }
     end
