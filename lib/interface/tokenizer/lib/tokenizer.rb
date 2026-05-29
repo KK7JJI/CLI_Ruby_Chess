@@ -13,6 +13,8 @@ module CLIChess
       close_window
       activate_window
       move_window
+      refresh_display
+      resize_window
       move
       to
       help

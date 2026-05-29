@@ -22,6 +22,16 @@ module CLIChess
       @active_window = @windows[-1]
     end
 
+    def resize_window(value, rows, cols)
+      # new_origin [row, col]
+      window = select_window(value)
+      return if window.nil?
+
+      window.rows = rows
+      window.cols = cols
+      window.rebuild_text
+    end
+
     def list_windows
       new_window(name: 'Windows',
                  new_origin: [2, 2],

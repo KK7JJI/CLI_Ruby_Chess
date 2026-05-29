@@ -17,7 +17,9 @@ module CLIChess
         'list_windows' => ListWindows,
         'close_window' => CloseWindow,
         'activate_window' => ActivateWindow,
-        'move_window' => MoveWindow
+        'move_window' => MoveWindow,
+        'refresh_display' => RefreshDisplay,
+        'resize_window' => ResizeWindow
       }
     end
 
