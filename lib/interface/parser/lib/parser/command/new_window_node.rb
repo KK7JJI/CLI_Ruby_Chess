@@ -17,7 +17,6 @@ module CLIChess
       consume.consume(expected_type: [:keyword], expected_value: ['new_window'])
       add_command_arguments
 
-      # 4) return either an error node or a command node.
       return error_node unless valid_command_node?
 
       cmd_node

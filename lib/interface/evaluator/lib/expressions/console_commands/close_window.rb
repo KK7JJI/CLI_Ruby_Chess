@@ -15,8 +15,7 @@ module CLIChess
     end
 
     def display_commands
-      display.delete_window(args[0].value) unless args.empty?
-      display.delete_window if args.empty?
+      display.delete_window(args[0].value)
       display.refresh_display
     end
 

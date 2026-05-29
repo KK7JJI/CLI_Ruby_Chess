@@ -3,72 +3,35 @@
 # project namespace
 module CLIChess
   # process command new_window
-  class CloseWindowNode
-    include NewErrorNode
-    include NewCommandNode
-    include OutputMSG
-
-    attr_accessor :return_node, :tokens, :consume, :parser,
-                  :cmd_node, :var_names
-
+  class CloseWindowNode < WindowNode
     ARGUMENT_NAMES = %w[name id].freeze
 
-    def self.call(parms:)
-      # 1) for the command, start with a class method
-      new(parms: parms).call
+    def cont_initialize(parms:)
+      @required_args = true
+      @mandatory_args = []
+      @allowed_args = ARGUMENT_NAMES.map { |name| name }
     end
 
-    def initialize(parms:)
-      @consume = parms[:consume]
-      @parser = parms[:parser]
-      @tokens = parms[:tokens]
-      @var_names = ARGUMENT_NAMES.map { |item| item }
-      @cmd_node = nil
-    end
-
-    def call
-      # 2) call the object method
-      command_close_window
-    end
-
-    def command_close_window
-      # sample> close_window
-      # sample> close_window 'WIN1'
+    def run
       # sample> close_window name='WIN1'
       # sample> close_window id=1
 
-      # 3) define expected tokens which are expected for this command keyword.
       self.cmd_node = new_command_node(tokens.current, :console_command)
       consume.consume(expected_type: [:keyword],
                       expected_value: ['close_window'])
-      add_command_arguments # expect 0 - 1 arguments
+      add_command_arguments
 
-      # 4) return either an error node or a command node.
       return error_node unless valid_command_node?
 
       cmd_node
     end
 
-    def add_command_arguments
-      cmd_argument
-    end
-
-    def cmd_argument
-      return if tokens.current.nil? # no argument provided
-
-      cmd_node.args << if tokens.current.type == :variable
-                         parser.parse_new_assignment(var_names: var_names)
-                       else
-                         parser.parse_new_expression
-                       end
-    end
-
-    def error_node
-      new_error_node
-    end
-
     def valid_command_node?
+      var_names = cmd_node.args.map { |arg| arg.value }
       return false if tokens.current && tokens.current.type == :error
+      return false if allowed_args.all? { |name| var_names.include?(name) }
+      return false if allowed_args.none? { |name| var_names.include?(name) }
+      return !var_names.empty? if required_args
 
       true
     end

@@ -36,6 +36,7 @@ end
 # expr = 'new_window name="SJH", type="simple", origin="5;5", cols=20, rows=40'
 # expr = 'new_window'
 expr = 'activate_window name="WIN1"'
+expr = 'close_window name="WIN2"'
 result = evaluate(expr)
 puts "result => (#{result})"
 

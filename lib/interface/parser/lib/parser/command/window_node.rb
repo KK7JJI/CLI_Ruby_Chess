@@ -5,9 +5,10 @@ module CLIChess
   class WindowNode
     include NewErrorNode
     include NewCommandNode
+    include OutputMSG
 
     attr_accessor :return_node, :tokens, :parser, :consume, :mandatory_args,
-                  :allowed_args, :cmd_node
+                  :allowed_args, :cmd_node, :required_args
 
     PUNCTUATION = [',', ':', ';', '--', '-'].freeze
 
@@ -29,7 +30,8 @@ module CLIChess
       run
     end
 
-    def cont_initialize(_parms:)
+    def cont_initialize(parms:)
+      @required_args = false
       @mandatory_args = []
       @allowed_args = []
     end
@@ -50,26 +52,21 @@ module CLIChess
 
     def cmd_argument
       arg_name = tokens.current&.name if tokens.current&.type == :variable
-      cmd_node.args << parser.parse_new_assignment(var_names: allowed_args)
+      arg = parser.parse_new_assignment(var_names: allowed_args)
+      cmd_node.args << arg unless arg.nil?
       mandatory_args.delete(arg_name)
     end
 
     def valid_command_node?
+      var_names = cmd_node.args.map { |arg| arg.value }
       return false if tokens.current && tokens.current.type == :error
+      return false unless mandatory_args.empty?
+      return !var_names.empty? if required_args
 
-      mandatory_args.empty?
+      true
     end
 
     def error_node
-      return if mandatory_args.empty?
-
-      # insert an error token and then build an error node.
-      #
-      # These steps are only necessary if we haven't seen all mandatory
-      # arguments. If parsing an argument produced an error it
-      # an error token exists and will be handled in the evaluator
-      # process.
-      #
       tokens.insert_token(
         tokens.error_token(error_msg: error_message)
       )
