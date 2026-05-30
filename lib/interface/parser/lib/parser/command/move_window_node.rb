@@ -25,12 +25,14 @@ module CLIChess
     end
 
     def valid_command_node?
-      var_names = cmd_node.args.map { |arg| arg.value }
       return false if tokens.current && tokens.current.type == :error
+      return false unless mandatory_args.empty?
+      return false unless valid_args?
+
+      var_names = cmd_node.args.map { |arg| arg.value }
+      return !var_names.empty? if required_args
       return false if %w[name id].all? { |val| var_names.include?(val) }
       return false if %w[name id].none? { |val| var_names.include?(val) }
-      return false unless mandatory_args.empty?
-      return !var_names.empty? if required_args
 
       true
     end

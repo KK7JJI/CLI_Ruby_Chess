@@ -35,12 +35,12 @@ end
 
 # expr = 'new_window name="SJH", type="simple", origin="5;5", cols=20, rows=40'
 # expr = 'new_window'
-expr = 'activate_window name="WIN1"'
-expr = 'resize_window name="WIN1", cols=10, rows=20'
-result = evaluate(expr)
-puts "result => (#{result})"
+# expr = 'activate_window name="WIN1"'
+# expr = 'move_window names="WIN2", origin="1;1"'
+# result = evaluate(expr)
+# puts "result => (#{result})"
 
-expr = 'move_window id=5, loc="10;10"'
+expr = 'resize_window something=5, loc="10;10"'
 result = evaluate(expr)
 puts "result => (#{result})"
 

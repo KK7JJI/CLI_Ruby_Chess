@@ -41,29 +41,37 @@ module CLIChess
     end
 
     def add_command_arguments
-      cmd_argument
+      arg = cmd_argument
+      cmd_node.args << arg unless arg.nil?
       while argument_delimiter?
         # consume will generate an error token if something unexpected is seen.
         consume.consume(expected_type: [:punctuation],
                         expected_value: PUNCTUATION)
-        cmd_argument
+        arg = cmd_argument
+        cmd_node.args << arg unless arg.nil?
       end
     end
 
     def cmd_argument
       arg_name = tokens.current&.name if tokens.current&.type == :variable
-      arg = parser.parse_new_assignment(var_names: allowed_args)
-      cmd_node.args << arg unless arg.nil?
       mandatory_args.delete(arg_name)
+      parser.parse_new_assignment(var_names: allowed_args)
     end
 
     def valid_command_node?
-      var_names = cmd_node.args.map { |arg| arg.value }
+      output_msg(msg: cmd_node.args.inspect)
       return false if tokens.current && tokens.current.type == :error
       return false unless mandatory_args.empty?
+      return false unless valid_args?
+
+      var_names = cmd_node.args.map { |arg| arg.value }
       return !var_names.empty? if required_args
 
       true
+    end
+
+    def valid_args?
+      cmd_node.args.none? { |arg| arg.type == :error }
     end
 
     def error_node
@@ -74,7 +82,19 @@ module CLIChess
     end
 
     def error_message
+      msg = arg_error_message
+      return msg unless msg.nil?
+
       "\"#{cmd_node.value}\" missing arguments #{mandatory_args.join(', ')}"
+    end
+
+    def arg_error_message
+      output_msg(msg: cmd_node.args.inspect)
+      msg = nil
+      cmd_node.args.each do |arg|
+        msg = arg.error_msg if arg.type == :error
+      end
+      msg
     end
 
     def argument_delimiter?
