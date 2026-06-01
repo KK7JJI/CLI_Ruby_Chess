@@ -25,6 +25,7 @@ require_relative 'lib/parser/command/activate_window_node'
 require_relative 'lib/parser/command/move_window_node'
 require_relative 'lib/parser/command/refresh_display_node'
 require_relative 'lib/parser/command/resize_window_node'
+require_relative 'lib/parser/command/add_text_node'
 
 require_relative 'lib/parser/command'
 require_relative 'lib/parser/tokens'

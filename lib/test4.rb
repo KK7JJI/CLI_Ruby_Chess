@@ -40,7 +40,7 @@ end
 # result = evaluate(expr)
 # puts "result => (#{result})"
 
-expr = 'resize_window something=5, loc="10;10"'
+expr = 'add_text name="WIN3", text="Hello World"'
 result = evaluate(expr)
 puts "result => (#{result})"
 

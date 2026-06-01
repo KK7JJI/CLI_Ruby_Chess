@@ -1,14 +1,5 @@
 require_relative '../lib/interface/interface'
 
-# def new_simple_window(**kwargs)
-#   SimpleWindow.new(
-#     name: kwargs[:name],
-#     id: next_id,
-#     metrics: window_metrics(**kwargs),
-#     display: self
-#   )
-# end
-
 describe CLIChess::SimpleWindow do
   let(:vert) { 2 }
   let(:horz) { 3 }

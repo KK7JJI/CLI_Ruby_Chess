@@ -10,8 +10,8 @@ module CLIChess
       raise NotImplementedError, '#cont_initialize must be defined.'
     end
 
-    def add_text(text, **kwargs)
-      raise NotImplementedError, '#add_text must be defined.'
+    def add_new_text(text, **kwargs)
+      raise NotImplementedError, '#add_new_text must be defined.'
     end
 
     def refresh

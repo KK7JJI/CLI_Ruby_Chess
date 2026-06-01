@@ -15,6 +15,7 @@ module CLIChess
       move_window
       refresh_display
       resize_window
+      add_text
       move
       to
       help

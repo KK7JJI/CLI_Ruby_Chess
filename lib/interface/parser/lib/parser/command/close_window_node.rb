@@ -32,9 +32,9 @@ module CLIChess
       return false unless valid_args?
 
       var_names = cmd_node.args.map { |arg| arg.value }
-      return !var_names.empty? if required_args
       return false if allowed_args.all? { |name| var_names.include?(name) }
       return false if allowed_args.none? { |name| var_names.include?(name) }
+      return !var_names.empty? if required_args
 
       true
     end

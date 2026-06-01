@@ -3,23 +3,20 @@
 # project namespace
 module CLIChess
   # process command new_window
-  class ActivateWindowNode < WindowNode
-    ARGUMENT_NAMES = %w[name id].freeze
+  class AddTextNode < WindowNode
+    ALLOWED_NAMES = %w[name id file text option].freeze
+    REQUIRED_NAMES = [].freeze
 
     def cont_initialize(parms:)
       @required_args = true
-      @mandatory_args = []
-      @allowed_args = ARGUMENT_NAMES.map { |name| name }
+      @mandatory_args = REQUIRED_NAMES.map { |item| item }
+      @allowed_args = ALLOWED_NAMES.map { |item| item }
     end
 
     def run
-      # sample> activate_window name='WIN1'
-      # sample> activate_window id=1
-
       self.cmd_node = new_command_node(tokens.current, :console_command)
-      consume.consume(expected_type: [:keyword],
-                      expected_value: ['activate_window'])
-      add_command_arguments # expect 0 - 1 arguments
+      consume.consume(expected_type: [:keyword], expected_value: ['add_text'])
+      add_command_arguments
 
       return error_node unless valid_command_node?
 
@@ -32,9 +29,11 @@ module CLIChess
       return false unless valid_args?
 
       var_names = cmd_node.args.map { |arg| arg.value }
-      return false if allowed_args.all? { |name| var_names.include?(name) }
-      return false if allowed_args.none? { |name| var_names.include?(name) }
       return !var_names.empty? if required_args
+      return false if %w[name id].all? { |name| var_names.include?(name) }
+      return false if %w[name id].none? { |name| var_names.include?(name) }
+      return false if %w[file text].all? { |name| var_names.include?(name) }
+      return false if %w[file text].none? { |name| var_names.include?(name) }
 
       true
     end

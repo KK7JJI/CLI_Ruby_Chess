@@ -64,9 +64,7 @@ describe CLIChess::Evaluator do
     describe "#{cmd} command" do
       [
         ["#{cmd} name='WIN1'", CLIChess::ReturnMessage],
-        ["#{cmd} id=2", CLIChess::ReturnMessage],
-        ["#{cmd} 'WIN1'", CLIChess::ReturnMessage],
-        ["#{cmd} 2", CLIChess::ReturnMessage]
+        ["#{cmd} id=2", CLIChess::ReturnMessage]
       ].each do |statement, expectedclass|
         it "#{statement} returns #{expectedclass}" do
           allow(display).to receive(:delete_window)

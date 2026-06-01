@@ -1,0 +1,1 @@
+[#<CLIChess::AssignmentNode:0x00007a2cd62e0c48 @type=:assignment, @line=1, @start_pos=12, @value="name", @assigned_node=#<CLIChess::StringNode:0x00007a2cd62e0ce8 @type=:string, @line=1, @start_pos=17, @value="WIN3">>]

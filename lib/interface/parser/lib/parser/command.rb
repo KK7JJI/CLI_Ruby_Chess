@@ -17,7 +17,8 @@ module CLIChess
       'activate_window' => ActivateWindowNode,
       'move_window' => MoveWindowNode,
       'refresh_display' => RefreshDisplayNode,
-      'resize_window' => ResizeWindowNode
+      'resize_window' => ResizeWindowNode,
+      'add_text' => AddTextNode
     }
 
     def initialize(parms:)

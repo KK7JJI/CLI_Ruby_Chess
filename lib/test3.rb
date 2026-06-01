@@ -33,20 +33,23 @@ disp.active_window.add_new_text('Hi Steve', option: :center_in_row, row: 1)
 disp.active_window.add_new_text('Hi Steve', option: :center_in_row, row: 0)
 disp.refresh_display
 
-# disp.delete_window('WIN1')
-# disp.refresh_display
-
 disp.new_window(name: 'WIN3',
                 new_origin: [3, 3],
                 rows: 20,
-                cols: 40,
+                cols: 10,
                 option: :scrolling)
 
-disp.active_window.add_new_text(CHESS_RULES)
+cols = 10
+rows = 20
+text = "#{'A' * (cols - 2)}" * (rows - 3)
+text += "#{'B' * (cols - 2)}" * (rows - 3)
+text += "#{'C' * (cols - 2)}" * (rows - 3)
+
+disp.active_window.add_new_text(text)
 disp.refresh_display
 
-disp.list_windows
-disp.refresh_display
+# disp.list_windows
+# disp.refresh_display
 
 # disp.activate_window('WIN3')
 # disp.refresh_display
@@ -60,14 +63,15 @@ disp.refresh_display
 # disp.delete_window(4)
 # disp.refresh_display
 
-disp.activate_window('WIN2')
-disp.refresh_display
+# disp.activate_window('WIN2')
+# disp.refresh_display
 
-disp.move_window(3, [20, 6])
-disp.refresh_display
+# disp.move_window(3, [20, 6])
+# disp.refresh_display
 
-disp.move_window(5, [20, 20])
-disp.refresh_display
+# moves Windows
+# disp.move_window(5, [20, 20])
+# disp.refresh_display
 
 disp.new_window(name: 'WIN5',
                 new_origin: [disp.rows - 8 - 3, 1],

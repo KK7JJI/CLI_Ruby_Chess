@@ -19,7 +19,8 @@ module CLIChess
         'activate_window' => ActivateWindow,
         'move_window' => MoveWindow,
         'refresh_display' => RefreshDisplay,
-        'resize_window' => ResizeWindow
+        'resize_window' => ResizeWindow,
+        'add_text' => AddText
       }
     end
 

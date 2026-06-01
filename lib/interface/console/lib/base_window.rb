@@ -43,6 +43,7 @@ module CLIChess
       # purge prior display commands
 
       # print blank lines to erase current display content
+      print "\e7"
       col = 1 + win_origin[1]
       line = win_origin[0]
       (rows - 2).times do
@@ -51,6 +52,7 @@ module CLIChess
         msg += ' ' * (cols - 2)
         print msg
       end
+      print "\e8"
     end
 
     def add_borders
