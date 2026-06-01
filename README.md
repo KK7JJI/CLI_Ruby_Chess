@@ -1,4 +1,5 @@
 # CLI_Ruby_Chess
+<<<<<<< HEAD
 
 # REPL
 
@@ -33,6 +34,12 @@ prompt> x = active_window
 
 returns a handle to the current active window.
 
+=======
+A chess program written in ruby for the command line.
+
+# Console Windows
+
+>>>>>>> a9d22ff0928d2feb03f86f1c6d871ce2e606b157
 ### #refresh_active
 
 ```
@@ -42,6 +49,7 @@ prompt> refresh_active
 Refreshes the contents of the active window. A refresh may be needed in
 order to render changes to the window contents after requesting changes.
 
+<<<<<<< HEAD
 ### #activate_window
 
 by window name
@@ -54,10 +62,20 @@ by window id
 
 ```
 prompt> activate_window(1)
+=======
+### activate_window
+
+```
+prompt> activate_window 'WIN1'
+prompt> activate_window 2
+prompt> activate_window name='WIN1'
+prompt> activate_window id=2
+>>>>>>> a9d22ff0928d2feb03f86f1c6d871ce2e606b157
 ```
 
 Activates a window either by window name or a numeric window id number.
 
+<<<<<<< HEAD
 ### #delete_window
 
 by window name
@@ -117,6 +135,47 @@ defaults to [0,0]
 locates the top left corner of the new window relative to the anchor window's
 origin. [0,0] creates the new window such that the top left corner is
 coincident with that of the anchor window, [1,2] positions it 1 row down
+=======
+see #activate_window
+
+### close_window
+
+delete/close a window by window name or id.  If no argument is given the active window will be closed.
+
+examples:
+```
+prompt> close_window
+prompt> close_window 'WIN1'
+prompt> close_window 2
+prompt> close_window name='WIN1'
+prompt> close_window id=2
+```
+
+see #delete_window
+
+### new_window
+
+create a new window
+
+```
+prompt> new_window name='WIN1', type='simple', origin='2;2', cols=20, rows=30
+```
+
+valide types:
+simple_window
+creates a window in which to display text.
+
+scrolling_window
+creates a window in which to display text which can be scrolled vertically.
+
+interactive_window
+creates a window with a command line interface.
+
+origin
+locates the top left corner of the new window relative to the top left corner
+of the display. [0,0] creates the new window such that the top left corner is
+coincident with that of the display, [1,2] positions it 1 row down
+>>>>>>> a9d22ff0928d2feb03f86f1c6d871ce2e606b157
 and 2 columns to the right.
 
 cols
@@ -126,6 +185,7 @@ rows
 defaults to the number of vertical rows in the current console.
 the number of rows in the window.
 
+<<<<<<< HEAD
 ### rows
 
 the number of rows in the current console
@@ -185,6 +245,27 @@ the window superclass
 ## Display
 
 # developing a new console command definition
+=======
+### list_windows
+
+creates a window listing the window names and ids of all open windows.
+
+```
+prompt> list_windows
+```
+
+```
+┌───── Windows ────┐ 
+│ │001: MAIN         
+│ │002: WIN1         
+│ │003: WIN2         
+│ │004: WIN3         
+│ │005: Windows      
+│ │                  
+```
+
+# developing a new console command definition, notes
+>>>>>>> a9d22ff0928d2feb03f86f1c6d871ce2e606b157
 
 Define grammar first.
 
