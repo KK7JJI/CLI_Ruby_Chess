@@ -1,1 +1,28 @@
-[#<CLIChess::AssignmentNode:0x00007a2cd62e0c48 @type=:assignment, @line=1, @start_pos=12, @value="name", @assigned_node=#<CLIChess::StringNode:0x00007a2cd62e0ce8 @type=:string, @line=1, @start_pos=17, @value="WIN3">>]
+exec_command
+{"name" => {value: "WIN2", type: :string}, "option" => {value: "center_row", type: :string}, "row" => {value: 5, type: :integer}, "text" => {value: "Hello World", type: :string}}
+SimpleWindow
+center_row
+col
+exec_command
+{"name" => {value: "WIN2", type: :string}, "option" => {value: "center_row", type: :string}, "row" => {value: 5, type: :integer}, "text" => {value: "Hello World", type: :string}}
+SimpleWindow
+center_row
+row
+exec_command
+{"name" => {value: "WIN2", type: :string}, "option" => {value: "justify_left", type: :string}, "row" => {value: 6, type: :integer}, "text" => {value: "Hello World", type: :string}}
+SimpleWindow
+justify_left
+row
+exec_command
+{"name" => {value: "WIN2", type: :string}, "option" => {value: "justify_right", type: :string}, "row" => {value: 7, type: :integer}, "text" => {value: "Hello World", type: :string}}
+SimpleWindow
+justify_right
+row
+exec_command
+{"name" => {value: "WIN2", type: :string}, "option" => {value: "insert_at", type: :string}, "row" => {value: 8, type: :integer}, "col" => {value: 5, type: :integer}, "text" => {value: "Hello World", type: :string}}
+SimpleWindow
+insert_at
+row
+col
+exec_command
+{"option" => {value: "insert_at", type: :string}, "row" => {value: 8, type: :integer}, "col" => {value: 5, type: :integer}, "text" => {value: "Hello World", type: :string}, "name" => {value: "WIN3", type: :string}, "loc" => {value: "30,30", type: :string}}

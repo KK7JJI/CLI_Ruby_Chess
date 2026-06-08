@@ -1,4 +1,5 @@
-new_window name='SJH', type='simple', origin='1;1', rows=30, cols=20
+new_window name='SJH', type='scrolling', origin='1;1', rows=30, cols=20
+add_text name='SJH', text='Hello World'
 
 [
  #<CLIChess::Token:0x000075106ad0f0f8 @type="operator", @name="-", @line=1, @col=0>,
@@ -66,3 +67,23 @@ def parse_unary
     parse_primary
   end
 end
+
+
+["\e[3;4H┌───────────────┐",
+"\e[3;9H Test1 ",
+"\e[4;4H│",
+"\e[4;20H│",
+"\e[5;4H│",
+"\e[5;20H│",
+"\e[6;4H│",
+"\e[6;20H│",
+"\e[7;4H│",
+"\e[7;20H│",
+"\e[8;4H│",
+"\e[8;20H│",
+"\e[9;4H└───────────────┘",
+"\e[4;5HAAAAAAAAAAAAAAA",
+"\e[5;5HAAAAAAAAAAAAAAA",
+"\e[6;5HAAAAAAAAAAAAAAA",
+"\e[7;5HAAAAAAAAAAAAAAA",
+"\e[8;5H(cont.)"]

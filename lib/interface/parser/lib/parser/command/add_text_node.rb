@@ -4,7 +4,7 @@
 module CLIChess
   # process command new_window
   class AddTextNode < WindowNode
-    ALLOWED_NAMES = %w[name id file text option].freeze
+    ALLOWED_NAMES = %w[name id file text option row col].freeze
     REQUIRED_NAMES = [].freeze
 
     def cont_initialize(parms:)

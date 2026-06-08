@@ -28,7 +28,9 @@ module CLIChess
       show_cursor: "\e[?25h",
       hide_cursor: "\e[?25hl",
       clear_screen: "\e[2J",
-      cursor_top_left: "\e[20;1H"
+      cursor_top_left: "\e[20;1H",
+      save_cursor_loc: "\e7",
+      restore_cursor_loc: "\e8"
     }.freeze
 
     TEAM = {

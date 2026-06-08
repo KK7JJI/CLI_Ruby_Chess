@@ -59,7 +59,6 @@ module CLIChess
     end
 
     def valid_command_node?
-      output_msg(msg: cmd_node.args.inspect)
       return false if tokens.current && tokens.current.type == :error
       return false unless mandatory_args.empty?
       return false unless valid_args?
@@ -89,7 +88,6 @@ module CLIChess
     end
 
     def arg_error_message
-      output_msg(msg: cmd_node.args.inspect)
       msg = nil
       cmd_node.args.each do |arg|
         msg = arg.error_msg if arg.type == :error

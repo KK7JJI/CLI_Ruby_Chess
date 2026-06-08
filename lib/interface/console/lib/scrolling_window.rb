@@ -13,7 +13,7 @@ module CLIChess
       @page = 0
     end
 
-    def add_new_text(text, options: nil)
+    def add_new_text(text)
       self.initial_text = text
       self.page = 0
       add_text
@@ -47,12 +47,12 @@ module CLIChess
     end
 
     def refresh
-      print "\e7"
+      print VIDEO[:save_cursor_loc]
       clear_window
       cmds.each do |cmd|
         print cmd
       end
-      print "\e8"
+      print VIDEO[:restore_cursor_loc]
     end
 
     private

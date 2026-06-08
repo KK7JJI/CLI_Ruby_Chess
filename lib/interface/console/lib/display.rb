@@ -106,6 +106,13 @@ module CLIChess
       windows[-1]
     end
 
+    def select_window(value)
+      return select_by_id(value) if value.is_a?(Integer)
+      return select_by_name(value) if value.is_a?(String)
+
+      nil
+    end
+
     private
 
     def window_metrics(**kwargs)
@@ -115,13 +122,6 @@ module CLIChess
         rows: kwargs[:rows],
         cols: kwargs[:cols]
       )
-    end
-
-    def select_window(value)
-      return select_by_id(value) if value.is_a?(Integer)
-      return select_by_name(value) if value.is_a?(String)
-
-      nil
     end
 
     def select_by_id(value)

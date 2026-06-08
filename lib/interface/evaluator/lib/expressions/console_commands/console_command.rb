@@ -5,6 +5,7 @@ module CLIChess
   class ConsoleCommand
     include ErrorMessage
     include ConsoleMixins
+    include OutputMSG
 
     attr_reader :display, :evaluator, :node
     attr_accessor :args, :argument_names
@@ -38,6 +39,7 @@ module CLIChess
     end
 
     def exec_command
+      output_msg(msg: __method__)
       self.args = command_args
 
       error_msg = validate_args
@@ -60,6 +62,7 @@ module CLIChess
     end
 
     def validate_args
+      output_msg(msg: evaluator.variables.inspect)
       args.each { |arg| return arg if arg.type == :error }
 
       unless valid_args?

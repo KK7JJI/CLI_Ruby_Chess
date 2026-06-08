@@ -40,7 +40,11 @@ end
 # result = evaluate(expr)
 # puts "result => (#{result})"
 
-expr = 'add_text name="WIN3", text="Hello World"'
+expr = 'add_text name="WIN2", option="center_row", row=5, text="Hello World"'
+expr = 'add_text name="WIN2", option="center_row", row=5, text="Hello World"'
+expr = 'add_text name="WIN2", option="justify_left", row=6, text="Hello World"'
+expr = 'add_text name="WIN2", option="justify_right", row=7, text="Hello World"'
+expr = 'add_text name="WIN2", option="insert_at", row=8, col=5, text="Hello World"'
 result = evaluate(expr)
 puts "result => (#{result})"
 
